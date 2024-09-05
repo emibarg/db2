@@ -111,7 +111,7 @@ CREATE TABLE Cursada (
 );
 CREATE TABLE Comision (
   id_comision int not null,
-  nombre varchar(50) not null unique,
+  nombre varchar(50) not null,
   id_cursada int not null,
   id_aula int not null,
   PRIMARY KEY(id_comision),
