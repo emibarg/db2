@@ -62,6 +62,9 @@ GRANT INSERT on acad.Plan_materia to jefe_catedra;
 GRANT UPDATE on acad.Plan_materia to jefe_catedra;
 
 
+SELECT * FROM mysql.roles_mapping;
+
+
 CREATE USER acad_admin@localhost IDENTIFIED BY 'supersecurepassword';
 GRANT acad_admin to acad_admin@localhost;
 
@@ -76,3 +79,6 @@ GRANT profesor to profesor@'%';
 
 CREATE USER jefe_catedra@'%' IDENTIFIED BY 'password';
 GRANT jefe_catedra to jefe_catedra@'%';
+
+
+SELECT user FROM mysql.user;
