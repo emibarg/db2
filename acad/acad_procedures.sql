@@ -102,3 +102,9 @@ proc_label:BEGIN
 	
 END//
 delimiter ;
+
+--Matricula de un Alumno
+delimiter //
+Create PROCEDURE matricularAlumno(IN pDniAlumno int ,pIdPlan int )
+proc_label:BEGIN 
+  
