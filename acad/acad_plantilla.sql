@@ -236,17 +236,17 @@ VALUES(3, 3, 'Comision A', 1);
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
 VALUES(3, 3, '2022-06-06', 'Inscripto', '2022-06-06');
 INSERT INTO Cursada (id_cursada, id_plan_materia, año_cursada, cuatrimestre)
-VALUES(4, 4, 2024, 2);
+VALUES(4, 5, 2024, 2);
 INSERT INTO Comision (id_comision, id_cursada, nombre, id_aula)
 VALUES(4, 4, 'Comision A1', 2);
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
 VALUES(4, 3, '2022-09-08', 'Cancelada', '2022-09-09');
 INSERT INTO Cursada (id_cursada, id_plan_materia, año_cursada, cuatrimestre)
-VALUES(, , , );
+VALUES(5, 7, 2024, 1);
 INSERT INTO Comision (id_comision, id_cursada, nombre, id_aula)
-VALUES(, , '', );
+VALUES(5, 5, 'Comision A', 1);
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
-VALUES(, , '', '', '');
+VALUES(5, 3, '2022-01-12', '2022-02-12', 'Cursando');
 
 INSERT INTO Persona (id_persona, nombre, apellido, dni, fecha_nacimiento, direccion, mail, telefono)
 VALUES(, '', '', , '', '', '', '');
