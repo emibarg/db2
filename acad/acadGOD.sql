@@ -1,3 +1,7 @@
+Drop schema acad;
+Create schema acad;
+Use acad;
+
 CREATE TABLE Persona (
   id_persona int not null,
   dni int not null,
@@ -109,8 +113,10 @@ CREATE TABLE Comision (
   id_comision int not null,
   nombre varchar(50) not null unique,
   id_cursada int not null,
+  id_aula int not null,
   PRIMARY KEY(id_comision),
-  FOREIGN KEY(id_cursada) REFERENCES Cursada(id_cursada)
+  FOREIGN KEY(id_cursada) REFERENCES Cursada(id_cursada),
+  FOREIGN KEY(id_aula) REFERENCES Aula(id_aula)
 );
 CREATE TABLE Alumno_comision (
   id_alumno int not null,
