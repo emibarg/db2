@@ -353,5 +353,8 @@ VALUES(17, 17, 'Comision L8', 1);
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
 VALUES(17, 7, '2020-02-03', 'Inscripto', '2020-02-03');
 
-
-
+INSERT INTO Alumno_plan (id_alumno, id_plan_de_estudio, fecha_matriculacion, condicion)
+VALUES(7, 4, '2024-03-03', 'Cursando');
+UPDATE Alumno_plan
+SET condicion = 'Baja'
+WHERE id_alumno = 7 AND id_plan_de_estudio = 7;
