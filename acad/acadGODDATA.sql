@@ -59,9 +59,9 @@ INSERT INTO Cursada (id_cursada, año_cursada, cuatrimestre, id_plan_materia) VA
 (2, 2023, 2, 2);
 
 -- Insertar datos en la tabla Comision
-INSERT INTO Comision (id_comision, nombre, id_cursada) VALUES
-(1, 'Comisión A', 1),
-(2, 'Comisión B', 2);
+INSERT INTO Comision (id_comision, nombre, id_cursada, id_aula) VALUES
+(1, 'Comisión A', 1, 1),
+(2, 'Comisión B', 2, 2);
 
 -- Insertar datos en la tabla Alumno_comision
 INSERT INTO Alumno_comision (id_alumno, id_comision, fecha_inscripcion, estado_inscripcion, fecha_estado) VALUES
