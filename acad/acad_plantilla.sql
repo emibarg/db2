@@ -249,104 +249,104 @@ INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_i
 VALUES(5, 3, '2022-01-12', '2022-02-12', 'Cursando');
 
 INSERT INTO Persona (id_persona, nombre, apellido, dni, fecha_nacimiento, direccion, mail, telefono)
-VALUES(, '', '', , '', '', '', '');
+VALUES(5, '', '', , '', '', '', '');
 INSERT INTO Alumno (id_alumno, id_persona)
-VALUES(, );
+VALUES(4, 5);
 INSERT INTO Alumno_plan (id_alumno, id_plan_de_estudio, fecha_matriculacion, condicion)
-VALUES(, , '', '');
+VALUES(4, , '', '');
 INSERT INTO Cursada (id_cursada, id_plan_materia, año_cursada, cuatrimestre)
-VALUES(, , , );
+VALUES(6, , , );
 INSERT INTO Comision (id_comision, id_cursada, nombre, id_aula)
-VALUES(, , '', );
+VALUES(6, 6, '', );
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
-VALUES(, , '', '', '');
+VALUES(6, 4, '', '', '');
 INSERT INTO Cursada (id_cursada, id_plan_materia, año_cursada, cuatrimestre)
-VALUES(, , , );
+VALUES(7, , , );
 INSERT INTO Comision (id_comision, id_cursada, nombre, id_aula)
-VALUES(, , '', );
+VALUES(7, 7, '', );
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
-VALUES(, , '', '', '');
+VALUES(7, 4, '', '', '');
 INSERT INTO Cursada (id_cursada, id_plan_materia, año_cursada, cuatrimestre)
-VALUES(, , , );
+VALUES(8, , , );
 INSERT INTO Comision (id_comision, id_cursada, nombre, id_aula)
-VALUES(, , '', );
+VALUES(8, 8, '', );
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
-VALUES(, , '', '', '');
+VALUES(8, 4, '', '', '');
 
 INSERT INTO Persona (id_persona, nombre, apellido, dni, fecha_nacimiento, direccion, mail, telefono)
-VALUES(, '', '', , '', '', '', '');
+VALUES(6, '', '', , '', '', '', '');
 INSERT INTO Alumno (id_alumno, id_persona)
-VALUES(, );
+VALUES(5, 6);
 INSERT INTO Alumno_plan (id_alumno, id_plan_de_estudio, fecha_matriculacion, condicion)
-VALUES(, , '', '');
+VALUES(5, , '', '');
 INSERT INTO Cursada (id_cursada, id_plan_materia, año_cursada, cuatrimestre)
-VALUES(, , , );
+VALUES(9, , , );
 INSERT INTO Comision (id_comision, id_cursada, nombre, id_aula)
-VALUES(, , '', );
+VALUES(9, 9, '', );
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
-VALUES(, , '', '', '');
+VALUES(9, 5, '', '', '');
 INSERT INTO Cursada (id_cursada, id_plan_materia, año_cursada, cuatrimestre)
-VALUES(, , , );
+VALUES(10, , , );
 INSERT INTO Comision (id_comision, id_cursada, nombre, id_aula)
-VALUES(, , '', );
+VALUES(10, 10, '', );
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
-VALUES(, , '', '', '');
+VALUES(10, 5, '', '', '');
 INSERT INTO Cursada (id_cursada, id_plan_materia, año_cursada, cuatrimestre)
-VALUES(, , , );
+VALUES(11, , , );
 INSERT INTO Comision (id_comision, id_cursada, nombre, id_aula)
-VALUES(, , '', );
+VALUES(11, 11, '', );
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
-VALUES(, , '', '', '');
+VALUES(11, 5, '', '', '');
 
 INSERT INTO Persona (id_persona, nombre, apellido, dni, fecha_nacimiento, direccion, mail, telefono)
-VALUES(, '', '', , '', '', '', '');
+VALUES(7, '', '', , '', '', '', '');
 INSERT INTO Alumno (id_alumno, id_persona)
-VALUES(, );
+VALUES(6, 7);
 INSERT INTO Alumno_plan (id_alumno, id_plan_de_estudio, fecha_matriculacion, condicion)
-VALUES(, , '', '');
+VALUES(6, , '', '');
 INSERT INTO Cursada (id_cursada, id_plan_materia, año_cursada, cuatrimestre)
-VALUES(, , , );
+VALUES(12, , , );
 INSERT INTO Comision (id_comision, id_cursada, nombre, id_aula)
-VALUES(, , '', );
+VALUES(12, 12, '', );
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
-VALUES(, , '', '', '');
+VALUES(12, 6, '', '', '');
 INSERT INTO Cursada (id_cursada, id_plan_materia, año_cursada, cuatrimestre)
-VALUES(, , , );
+VALUES(13, , , );
 INSERT INTO Comision (id_comision, id_cursada, nombre, id_aula)
-VALUES(, , '', );
+VALUES(13, 13, '', );
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
-VALUES(, , '', '', '');
+VALUES(13, 6, '', '', '');
 INSERT INTO Cursada (id_cursada, id_plan_materia, año_cursada, cuatrimestre)
-VALUES(, , , );
+VALUES(14, , , );
 INSERT INTO Comision (id_comision, id_cursada, nombre, id_aula)
-VALUES(, , '', );
+VALUES(14, 14, '', );
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
-VALUES(, , '', '', '');
+VALUES(14, 6, '', '', '');
 
 INSERT INTO Persona (id_persona, nombre, apellido, dni, fecha_nacimiento, direccion, mail, telefono)
-VALUES(, '', '', , '', '', '', '');
+VALUES(8, '', '', , '', '', '', '');
 INSERT INTO Alumno (id_alumno, id_persona)
-VALUES(, );
+VALUES(7, 8);
 INSERT INTO Alumno_plan (id_alumno, id_plan_de_estudio, fecha_matriculacion, condicion)
-VALUES(, , '', '');
+VALUES(7, , '', '');
 INSERT INTO Cursada (id_cursada, id_plan_materia, año_cursada, cuatrimestre)
-VALUES(, , , );
+VALUES(15, , , );
 INSERT INTO Comision (id_comision, id_cursada, nombre, id_aula)
-VALUES(, , '', );
+VALUES(15, 15, '', );
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
-VALUES(, , '', '', '');
+VALUES(15, 7, '', '', '');
 INSERT INTO Cursada (id_cursada, id_plan_materia, año_cursada, cuatrimestre)
-VALUES(, , , );
+VALUES(16, , , );
 INSERT INTO Comision (id_comision, id_cursada, nombre, id_aula)
-VALUES(, , '', );
+VALUES(16, 16, '', );
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
-VALUES(, , '', '', '');
+VALUES(16, 7, '', '', '');
 INSERT INTO Cursada (id_cursada, id_plan_materia, año_cursada, cuatrimestre)
-VALUES(, , , );
+VALUES(17, , , );
 INSERT INTO Comision (id_comision, id_cursada, nombre, id_aula)
-VALUES(, , '', );
+VALUES(17, 17, '', );
 INSERT INTO Alumno_comision (id_comision, id_alumno, fecha_inscripcion, estado_inscripcion, fecha_estado)
-VALUES(, , '', '', '');
+VALUES(17, 7, '', '', '');
 
 
 
