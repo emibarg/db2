@@ -1,0 +1,114 @@
+Las db guardan datos en tablas. Tambien vimos que las vistas permiten que el usuario pueda ver datos sin tener que crear otra tabla fisica.
+Tambien desde un usuario, una vista nos permite acceder a los datos, esto nos da mas seguridad y nos permite restringir de cierta forma lo que un usuario puede ver y acceder. La vista es un codigo de sql que se guarda, el cual muestra una tabla y se puede tratar como otra tabla para usar SELECTS. En realidad la vista es solo un pedazo de sql que seria "reemplazado" al llamarlo.
+La vista disfraza el modelo para evitar usar joins constantemente.
+
+Las DB relacionales tambien nos van a permitir hacer un poco de programacion, permiten almacenar bloques de codigo al sistema, se llama PROCEDIMIENTOS ALMACENADOS, son un conjunto de sentencias sql que permiten llevar a cabo cierto procesamiento. Permite sintetizar mucha logica del negocio y ponerla en la DB.
+
+En la arqui C-S, si el cliente debe cambiar datos, esto generalmente implica decirle al server que realize "proceso" sobre los datos del servidor, si el proceso se especifica en el cliente, entonces el cliente se llena de logica del negocio. Si la DB tiene conectados muchos clientes (N), donde cada uno puede representar distintos tipos de aplicacion, habria que copiar cada logica a cada cliente, entonces ellos deben procesar la informacion. El problema de esta situacion es que si debemos cambiar le proceso, se debe cambiar en todos los clientes, entonces si uno no se actualiza, esto va a generar problemas en la consistencia de la DB. Para solucionar esto, los procesor se llevaron al servidor, entonces es la DB la que lleva la logica de negocios, tambien se puede definir un server de aplicacion para que no se concentre la logica en la DB. Sin embargo lo importante es que la logica de negocio se debe inculcar en un lugar donde un cambio sea efectivo para todos los clientes lo mas rapido, entonces la logica se concentra en el server o en la capa del medio (que no vamos a ver, por lo que se concentra todo en la db).
+
+Vamos a utilizar "PLSQL" (es el de Oracle, mysql usa otro).
+VENTAJAS DE PROGRAMAR A NIVEL SERVER: evitar accedo directo a las tablas (Ahora los usuarios no tienen acceso directo a las tablas, sino a los procesos que modifican las tablas, restringiendo el nivel de acceso que tienen), concentrar la lógica del negocio, reducir el trafico de red.
+
+La idea es desarrollar objetos para que los usuarios accedan a traves de estos a las tablas (procedimientos, vistas, etc.)
+
+[Problemas con la db...]
+
+Procedimiento almacenado: NO todos los lenguajes son iguales. Se pueden usar para casi cualquier cosa, todo procedimiento almacenado se crea con:
+
+delimiter // (La sentencia de ejecucion va a terminar con //)
+
+CREATE PROCEDURE _nombre(_param) (Ese _param es del formato _nombre_param TIPO_DATO, es un parametro de entrada)
+BEGIN
+	_sentencias_sql (terminan siempre con ; hay que especificar al sql que se va a usar otro demilitador para limitar lineas con DELIMITER //)
+
+	(Se pueden declarar variables locales al procedimiento)
+	DECLARE _nombre_var TIPO;
+
+	(Insertar dato)
+	Select count(*)
+	From tabla_ejemplo
+	INTO _var_int; (Puede estar entre from y select tambien)
+	
+	Select _var_int; (Mostramos la variable)
+
+END
+//
+
+delimiter ; (Volver a lo normal)
+
+Ahora se definio un objeto con _nombre, que se ejecuta con CALL _nombre(_param);
+Por fuero al procedimiento, al abrir el terminal se pueden declarar VARIABLE DE SESION, se puede combinar con los procedimientos:
+set@_nombre=_valor_inicial; Se puede usar para almacenar cualquier tipo de dato
+Al asignar seria:
+into @_nombre;
+
+Con estas variables podemos hacer que cualquier procedimiento almacenado reciba parametros de salida y de entrada.
+CREATE PROCEDURE _nombre(IN _param_entrada TIPO, OUT _param_salida TIPO), se almacena luego algo en el _param_salida, devuelve resultados y con ese _param_salida se almacena un dato.
+
+BEGIN
+	--sql
+	INTO _param_salida;
+END
+//
+
+Si se quiere que un procedure devuelva un dato, se puede usar con var. de sesion o se puede usar una FUNCION ALMACENADA:
+
+delimeter //
+
+CREATE FUNCTION _nombre_funcion(_param)
+RETURNS TIPO (Param de salida)
+BEGIN
+	--code
+RETURN _var_salida; (Variable que devuelve)
+END
+//
+
+delimeter;
+
+TAMBIEN FUNCIONA CON DROP
+
+
+Hay distintas formas de invocar a una funcion:
+
+set@_var_sesion = _nombre_funcion(_param);
+select _nombre_funcion(_param);
+select _nombre_funcion(_param) into @_var_sesion;
+select _columna, _nombre_funcion(_param)
+from _tablas;
+
+CONTROL DE FLUJO:
+if _cond then
+   --sql
+else
+	--sql
+end if;
+
+case _var
+when _ then;
+else;
+end case;
+
+while _ do
+      --sql
+end while;
+
+repeat
+	until
+end repeat
+
+HAY LOOPS :(
+
+
+PRACTICO:
+
+En el parcial individual esto es muy importante.
+Vamos a agregar reglas de negocio al sistema de gestion academica:
+      Hacer solo con procedures y funciones
+      	    Cargar carrera (verificar que existe)
+      	    Carga de plan para una carrera (verificar que el plan no haya sido cargado previamente)
+	    Carga de materias en un plan de carrera (verificar existencia del plan, verficiar existencia de materia)
+	    Matricula de un alumno (verificar existencia de alumno, verificar existencia del plan, verificar que el alumno no este matriculado en ese plan de carrera)
+	    Inscripcion en materia(No permitir inscripcion en la materia si el alumno tiene inscripcion en regular o cursando)
+	    Registro de parciales(largo Registrar parciales solo si esta cursando, otro estado deberia rechazar, actualizar el estado automaticamente si tiene 2 aprovados = regular y 2 no aprobaddos = libres)
+	    Inscripcion
+	    [Va a pasar el pdf...]

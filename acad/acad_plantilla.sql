@@ -532,24 +532,24 @@ SET nota = 'Ausente'
 WHERE id_turno_examen = 8 AND id_alumno = 3;
 
 UPDATE Inscripcion_examen
-SET nota = ''
+SET nota = '5'
 WHERE id_turno_examen = 7 AND id_alumno = 4;
 UPDATE Inscripcion_examen
-SET nota = ''
+SET nota = '4'
 WHERE id_turno_examen = 9 AND id_alumno = 4;
 
 UPDATE Inscripcion_examen
-SET nota = ''
+SET nota = '3'
 WHERE id_turno_examen = 11 AND id_alumno = 5;
 UPDATE Inscripcion_examen
-SET nota = ''
+SET nota = '4'
 WHERE id_turno_examen = 14 AND id_alumno = 5;
 
 UPDATE Inscripcion_examen
-SET nota = ''
+SET nota = '4'
 WHERE id_turno_examen = 13 AND id_alumno = 6;
 UPDATE Inscripcion_examen
-SET nota = ''
+SET nota = '4'
 WHERE id_turno_examen = 16 AND id_alumno = 6;
 
 UPDATE Inscripcion_examen
