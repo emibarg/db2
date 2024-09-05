@@ -1,3 +1,11 @@
+
+--Cantidad de alumnos inscriptos por carrera
+
+SELECT c.nombre, count(id_alumno)
+FROM Alumno_plan ap inner join Plan_de_estudio pe on ap.id_plan_de_estudio = pe.id_plan_de_estudio
+inner join Carrera c on pe.id_carrera = c.id_carrera
+GROUP BY c.id_carrera;
+
 --CANTIDAD DE EXAMENES RENDIDOS Y APROBADOS POR MATERIA NOTA >4
 SELECT Count(*) as Cantidad_parciales_aprobados, m.nombre 
 FROM Parcial p JOIN Cursada c on p.id_cursada = c.id_cursada
