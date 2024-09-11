@@ -86,6 +86,7 @@ proc_label:BEGIN
 	ELSE
 	   INSERT INTO Plan_de_estudio (año, id_carrera)
 	   VALUES(pAño , idCarrera);
+	   Select * from Plan_de_estudio;
 	END IF;
 END//
 delimiter ;
@@ -94,10 +95,74 @@ delimiter ;
 delimiter //
 CREATE PROCEDURE cargarPlanMateria(IN pAño int, IN pNombreCarrera varchar(50), IN pNombreMateria varchar(50), IN pJefeCatedraDNI int)
 proc_label:BEGIN
-	DECLARE idPlanMateria INT DEFAULT 0; --Buscar plan de estudio con nombre de carrera y año
-	DECLARE idMateria INT DEFAULT 0; --Buscar materia con el nombre de materia
-	DECLARE idJefeCatedra INT DEFAULT 0; --Buscar Profesor con el DNI
-	DECLARE tempPlan INT DEFAULT 0; --Checkear que el plan ya no exista
+	DECLARE idPlanDeEstudio INT DEFAULT 0; 
+	DECLARE idMateria INT DEFAULT 0;
+	DECLARE idJefeCatedra INT DEFAULT 0; 
+	DECLARE tempPlan INT DEFAULT 0;
+
+	DECLARE temp INT DEFAULT 0; 
+
+	Select count(*) INTO temp
+	From Materia ma
+	Where ma.nombre = pNombreMateria;
+
+	IF temp = 0 THEN
+	   Select 'No existe esa materia';
+	   LEAVE proc_label;
+	END IF;
+
+
+	Select count(*) INTO temp
+	From Carrera c
+	Where c.nombre = pNombreCarrera;
+
+	IF temp = 0 THEN
+	   Select 'No existe esa carrera';
+	   LEAVE proc_label;
+	END IF;
+
+
+	Select count(*) INTO temp
+	From Profesor p
+	inner join Persona pe on pe.id_persona = p.id_persona
+	Where pe.dni = pJefeCatedraDNI;
+
+	IF temp = 0 THEN
+	   Select 'No existe ese profesor';
+	   LEAVE proc_label;
+	END IF;
+
+
+	Select ma.id_materia INTO idMateria
+	From Materia ma
+	Where ma.nombre = pNombreMateria;
+
+	Select ple.id_plan_de_estudio INTO idPlanDeEstudio
+	From Carrera c
+	inner join Plan_de_estudio ple on c.id_carrera = ple.id_carrera
+	Where c.nombre = pNombreCarrera
+	AND  (ple.año-pAño) >= all(Select (ple2.año-pAño)
+	From Plan_de_estudio ple2
+	Where ple2.id_carrera = c.id_carrera);
+
+	Select p.id_profesor INTO idJefeCatedra
+	From Profesor p
+	inner join Persona pe on pe.id_persona = p.id_persona
+	Where pe.dni = pJefeCatedraDNI;
+
+
+	Select count(*) INTO tempPlan
+	From Plan_materia pm
+	Where pm.id_plan_de_estudio = idPlanDeEstudio AND pm.id_materia = idMateria AND pm.id_jefe_catedra = idJefeCatedra AND pm.año = pAño;
+
+	IF tempPlan > 0 THEN
+	   Select 'Ya existe esa materia en ese plan';
+	   LEAVE proc_label;
+	ELSE
+	   INSERT INTO Plan_materia (id_plan_de_estudio, id_materia, id_jefe_catedra, año)
+	   VALUES(idPlanDeEstudio, idMateria, idJefeCatedra, pAño);
+	   Select * from Plan_materia;
+	END IF;
 	
 	
 END//
@@ -105,6 +170,75 @@ delimiter ;
 
 --Matricula de un Alumno
 delimiter //
-Create PROCEDURE matricularAlumno(IN pDniAlumno int ,pIdPlan int )
-proc_label:BEGIN 
+Create PROCEDURE matricularAlumno(IN pDniAlumno int, IN pAñoPlan int, IN pNombreCarrera varchar(50) )
+proc_label:BEGIN
+	DECLARE idAlumno INT DEFAULT 0;
+	DECLARE idPersona INT DEFAULT 0;
+	DECLARE idPlanDeEstudio INT DEFAULT 0; 
+	DECLARE tempMatricula INT DEFAULT 0;
+
+	DECLARE temp INT DEFAULT 0;
+
+	Select count(*) INTO temp
+	From Persona p
+	Where p.dni = pDniAlumno;
+
+	IF temp = 0 THEN
+	   Select 'No existe esa persona';
+	   LEAVE proc_label;
+	END IF;
+
+	Select count(*) INTO temp
+	From Carrera c
+	Where c.nombre = pNombreCarrera;
+
+	IF temp = 0 THEN
+	   Select 'No existe esa carrera';
+	   LEAVE proc_label;
+	END IF;
+
+	Select count(*) INTO temp
+	From Plan_de_estudio ple inner join Carrera c on ple.id_carrera = c.id_carrera
+	Where c.nombre = pNombreCarrera AND ple.año = pAñoPlan;
+
+	IF temp = 0 THEN
+	   Select 'No existe ese plan';
+	   LEAVE proc_label;
+	END IF;
+
+	Select count(*) INTO temp
+	From Alumno a inner join Persona p on p.id_persona = a.id_persona
+	Where p.dni = pDniALumno;
+
+	IF temp = 0 THEN
+	   Select p.id_persona INTO idPersona
+	   From Persona p 
+	   Where p.dni = pDniAlumno;
+
+	   INSERT INTO Alumno (id_persona)
+	   VALUES(idPersona);
+	END IF;
+
+	Select a.id_alumno INTO idAlumno
+	From Alumno a inner join Persona p on p.id_persona = a.id_persona
+	Where p.dni = pDniALumno;
+
+	Select ple.id_plan_de_estudio INTO idPlanDeEstudio
+	From Plan_de_estudio ple inner join Carrera c on ple.id_carrera = c.id_carrera
+	Where c.nombre = pNombreCarrera AND ple.año = pAñoPlan;
+
+	Select count(*) into tempMatricula
+	From Alumno_plan ap
+	Where ap.id_alumno = idAlumno AND ap.id_plan_de_estudio = idPlanDeEstudio;
+
+	IF tempMatricula > 0 THEN
+	   Select 'Ya esta matriculado en ese plan de carrera';
+	   LEAVE proc_label;
+	ELSE
+	   INSERT INTO Alumno_plan(id_alumno, id_plan_de_estudio, fecha_matriculacion, condicion)
+	   VALUES (idAlumno, idPlanDeEstudio, CURDATE(), 'Inscripto');
+	   Select * From Alumno_plan;
+	END IF;
+END//
+delimiter ;
   

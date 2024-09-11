@@ -17,7 +17,7 @@ CREATE TABLE Persona (
 );
 
 CREATE TABLE Alumno (
-  id_alumno int not null,
+  id_alumno int not null AUTO_INCREMENT,
   id_persona int not null,
   PRIMARY KEY(id_alumno),
   FOREIGN KEY(id_persona) REFERENCES Persona(id_persona)
