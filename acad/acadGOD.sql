@@ -4,7 +4,7 @@ Use acad;
 
 CREATE TABLE Persona (
   id_persona int not null AUTO_INCREMENT,
-  dni int not null,
+  dni int not null unique,
   nombre varchar(50) not null,
   apellido varchar(50) not null,
   fecha_nacimiento date not null,
