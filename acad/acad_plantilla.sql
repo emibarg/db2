@@ -615,6 +615,24 @@ GROUP BY pe.id_plan_de_estudio;
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 -- Plantillas para procedures
+call contarAlumnos();
+
+call cargarCarrera('Odontología', 'Odontologo', 'Facultad de Ciencias Exactas');
+
+call cargarPlanDeEstudio(2024, 'Ingeniería en Computación');
+
+call cargarPlanMateria(2024, 'Ingeniería en Computación', 'Tecnicas Digitales', 34567890);
+
+call matricularAlumno(12345678, 2024, 'Ingeniería en Computación');
+
+DELETE FROM Alumno_comision WHERE id_alumno = 1 AND id_comision = 1; 
+call inscripcionCursada(12345678, 'Comision A', 'Base de Datos II', 'Ingeniería Informática', 1);
 
 
+UPDATE Alumno_plan SET condicion = 'Cursando' WHERE id_plan_de_estudio = 1 and id_alumno = 1;
+call cargarParcial(12345678, 'Base de Datos II', 'Ingeniería Informática', 8);
 
+
+call inscripcionExamen(12345678, 'Base de Datos II', '2023-07-10');
+
+call cargarNota(12345678, 'Base de Datos II', 8);

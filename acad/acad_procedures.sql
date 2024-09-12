@@ -563,6 +563,7 @@ proc_label:BEGIN
 	Where ac.id_alumno = idAlumno AND ma.id_materia = idMateria AND pm.id_plan_de_estudio = idPlanDeEstudio AND ac.estado_inscripcion = 'Cursando';
 
 	IF temp = 0 THEN
+	   Select idAlumno, idMateria, idPlanDeEstudio, temp;
 	   Select 'Ese alumno no esta cursando en una comision que pertenezca a una cursada de esa materia dentro de su plan';
 	   LEAVE proc_label;
 	END IF;
