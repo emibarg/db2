@@ -18,8 +18,6 @@ BEGIN
 END//
 delimiter ;
 
--- Cargar carrera;
-
 delimiter //
 CREATE PROCEDURE cargarCarrera(IN pNombre varchar(50), IN pTitulo varchar(50), IN pNombreFacultad varchar(50))
 proc_label:BEGIN
@@ -71,8 +69,6 @@ proc_label:BEGIN
 END//
 delimiter ;
 
--- Cargar plan de una carrera;
-
 delimiter //
 CREATE PROCEDURE cargarPlanDeEstudio(IN pAño int, IN pNombreCarrera varchar(50))
 proc_label:BEGIN
@@ -102,8 +98,6 @@ proc_label:BEGIN
 	END IF;
 END//
 delimiter ;
-
---Carga de Materias en un plan de carrera;
 
 delimiter //
 CREATE PROCEDURE cargarPlanMateria(IN pAño int, IN pNombreCarrera varchar(50), IN pNombreMateria varchar(50), IN pJefeCatedraDNI int)
@@ -181,8 +175,6 @@ proc_label:BEGIN
 END//
 delimiter ;
 
---Matricula de un Alumno;
-
 delimiter //
 Create PROCEDURE matricularAlumno(IN pDniAlumno int, IN pAñoPlan int, IN pNombreCarrera varchar(50) )
 proc_label:BEGIN
@@ -255,8 +247,6 @@ proc_label:BEGIN
 	END IF;
 END//
 delimiter ;
-  
--- Inscripcion a cursada;
 
 delimiter //
 CREATE PROCEDURE inscripcionCursada(IN pDniAlumno int, IN pNombreComision varchar(50), IN pNombreMateria varchar(50), IN pNombreCarrera varchar(50), IN pCuatrimestre int)
@@ -412,8 +402,6 @@ proc_label:BEGIN
 END//
 delimiter ;
 
--- Inscripcion Examen;
-
 delimiter //
 
 CREATE PROCEDURE inscripcionExamen (IN pDniAlumno int, IN pMateria varchar(50), IN pFechaTurno DATE )
@@ -493,9 +481,6 @@ END IF;
 END//
 
 delimiter ;
-
--- Registro de Parciales;
--- call cargarParcial(4343112, 'Tecnicas Digitales', 'Ingeniería en Computación', 4);
 
 delimiter //
 CREATE PROCEDURE cargarParcial(IN pDniAlumno int, IN pNombreMateria varchar(50), IN pNombreCarrera varchar(50), IN pNota int)
@@ -643,9 +628,6 @@ proc_label:BEGIN
 	
 END//
 delimiter ;
-
--- CargarNotaFinal;
--- call cargarNota(12345678, 'Base de Datos II', -4);
 
 
 delimiter //
