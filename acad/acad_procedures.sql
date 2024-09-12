@@ -8,7 +8,8 @@ BEGIN
 END//
 delimiter ;
 
--- Cargar carrera
+-- Cargar carrera;
+
 delimiter //
 CREATE PROCEDURE cargarCarrera(IN pNombre varchar(50), IN pTitulo varchar(50), IN pNombreFacultad varchar(50))
 proc_label:BEGIN
@@ -60,7 +61,8 @@ proc_label:BEGIN
 END//
 delimiter ;
 
--- Cargar plan de una carrera
+-- Cargar plan de una carrera;
+
 delimiter //
 CREATE PROCEDURE cargarPlanDeEstudio(IN pAño int, IN pNombreCarrera varchar(50))
 proc_label:BEGIN
@@ -91,7 +93,8 @@ proc_label:BEGIN
 END//
 delimiter ;
 
---Carga de Materias en un plan de carrera
+--Carga de Materias en un plan de carrera;
+
 delimiter //
 CREATE PROCEDURE cargarPlanMateria(IN pAño int, IN pNombreCarrera varchar(50), IN pNombreMateria varchar(50), IN pJefeCatedraDNI int)
 proc_label:BEGIN
@@ -168,7 +171,8 @@ proc_label:BEGIN
 END//
 delimiter ;
 
---Matricula de un Alumno
+--Matricula de un Alumno;
+
 delimiter //
 Create PROCEDURE matricularAlumno(IN pDniAlumno int, IN pAñoPlan int, IN pNombreCarrera varchar(50) )
 proc_label:BEGIN
@@ -242,7 +246,7 @@ proc_label:BEGIN
 END//
 delimiter ;
   
--- Inscripcion a cursada
+-- Inscripcion a cursada;
 
 delimiter //
 CREATE PROCEDURE inscripcionCursada(IN pDniAlumno int, IN pNombreComision varchar(50), IN pNombreMateria varchar(50), IN pNombreCarrera varchar(50), IN pCuatrimestre int)
@@ -398,7 +402,7 @@ proc_label:BEGIN
 END//
 delimiter ;
 
--- Inscripcion Examen
+-- Inscripcion Examen;
 
 delimiter //
 
@@ -478,4 +482,154 @@ END IF;
     VALUES (turnoExists, idAlumno, CURDATE());
 END//
 
+delimiter ;
+
+-- Registro de Parciales;
+-- call cargarParcial(4343112, 'Tecnicas Digitales', 'Ingeniería en Computación', 4)
+
+delimiter //
+CREATE PROCEDURE cargarParcial(IN pDniAlumno int, IN pNombreMateria varchar(50), IN pNombreCarrera varchar(50), IN pNota int)
+proc_label:BEGIN
+	DECLARE idAlumno INT DEFAULT 0;
+	DECLARE idMateria INT DEFAULT 0;
+	DECLARE idPlanDeEstudio INT DEFAULT 0;
+	DECLARE idCursada INT DEFAULT 0;
+	DECLARE idComision INT DEFAULT 0;
+
+	DECLARE temp INT DEFAULT 0;
+
+	Select count(*) into temp
+	From Persona p inner join Alumno a on p.id_persona = a.id_persona
+	Where p.dni = pDniAlumno;
+
+	IF temp = 0 THEN
+	   Select 'No existe ese alumno';
+	   LEAVE proc_label;
+	END IF;
+
+	Select a.id_alumno into idAlumno
+	From Persona p inner join Alumno a on p.id_persona = a.id_persona
+	Where p.dni = pDniAlumno;
+
+	Select count(*) into temp
+	From Materia ma
+	Where ma.nombre = pNombreMateria;
+
+	IF temp = 0 THEN
+	   Select 'No existe esa materia';
+	   LEAVE proc_label;
+	END IF;
+
+	Select ma.id_materia into idMateria
+	From Materia ma
+	Where ma.nombre = pNombreMateria;
+
+	Select count(*) into temp
+	From Carrera c
+	Where c.nombre = pNombreCarrera;
+
+	IF temp = 0 THEN
+	   Select 'No existe esa carrera';
+	   LEAVE proc_label;
+	END IF;
+
+	Select count(*) into temp
+	From Carrera c inner join Plan_de_estudio pde on c.id_carrera = pde.id_carrera
+	Where c.nombre = pNombreCarrera;
+
+	IF temp = 0 THEN
+	   Select 'Esa carrera no tiene planes de estudio';
+	   LEAVE proc_label;
+	END IF;
+
+	Select count(*) into temp
+	From Carrera c inner join Plan_de_estudio pde on c.id_carrera = pde.id_carrera
+	inner join Alumno_plan ap on ap.id_plan_de_estudio = pde.id_plan_de_estudio
+	Where c.nombre = pNombreCarrera and ap.id_alumno = idAlumno;
+
+	IF temp = 0 THEN
+	   Select 'Ese alumno no esta inscripto a un plan de estudio de esa carrera';
+	   LEAVE proc_label;
+	END IF;
+
+	Select pde.id_plan_de_estudio INTO idPlanDeEstudio
+	From Carrera c inner join Plan_de_estudio pde on c.id_carrera = pde.id_carrera
+	inner join Alumno_plan ap on ap.id_plan_de_estudio = pde.id_plan_de_estudio
+	Where c.nombre = pNombreCarrera and ap.id_alumno = idAlumno and ap.condicion = 'Cursando'
+	order by pde.año DESC
+	Limit 1;
+
+	Select count(*) into temp
+	From Alumno_comision ac
+	inner join Comision co on co.id_comision = ac.id_comision
+	inner join Cursada cu on cu.id_cursada = co.id_cursada
+	inner join Plan_materia pm on cu.id_plan_materia = pm.id_plan_materia
+	inner join Materia ma on pm.id_materia = ma.id_materia
+	Where ac.id_alumno = idAlumno AND ma.id_materia = idMateria AND pm.id_plan_de_estudio = idPlanDeEstudio AND ac.estado_inscripcion = 'Cursando';
+
+	IF temp = 0 THEN
+	   Select 'Ese alumno no esta cursando en una comision que pertenezca a una cursada de esa materia dentro de su plan';
+	   LEAVE proc_label;
+	END IF;
+
+	Select cu.id_cursada INTO idCursada
+	From Alumno_comision ac
+	inner join Comision co on co.id_comision = ac.id_comision
+	inner join Cursada cu on cu.id_cursada = co.id_cursada
+	inner join Plan_materia pm on cu.id_plan_materia = pm.id_plan_materia
+	inner join Materia ma on pm.id_materia = ma.id_materia
+	Where ac.id_alumno = idAlumno AND ma.id_materia = idMateria AND pm.id_plan_de_estudio = idPlanDeEstudio AND ac.estado_inscripcion = 'Cursando'
+	Order by ac.fecha_inscripcion DESC
+	Limit 1;
+
+	Select count(*) into temp
+	From Parcial p
+	Where p.id_cursada = idCursada AND p.id_alumno = idAlumno;
+
+	IF temp > 2 THEN
+	   Select 'El alumno ya tiene al menos 3 parciales cargados en esa cursada';
+	   Select p.* FROM Parcial p Where p.id_cursada = idCursada AND p.id_alumno = idAlumno;
+	ELSE
+	   INSERT INTO Parcial (id_alumno, id_cursada, fecha, nota)
+      	   VALUES(idAlumno, idCursada, CURDATE(), pNota);
+	END IF;
+
+	Select ac.id_comision INTO idComision
+	From Alumno_comision ac
+	inner join Comision co on co.id_comision = ac.id_comision
+	inner join Cursada cu on cu.id_cursada = co.id_cursada
+	inner join Plan_materia pm on cu.id_plan_materia = pm.id_plan_materia
+	inner join Materia ma on pm.id_materia = ma.id_materia
+	Where ac.id_alumno = idAlumno AND ma.id_materia = idMateria AND pm.id_plan_de_estudio = idPlanDeEstudio AND ac.estado_inscripcion = 'Cursando'
+	Order by ac.fecha_inscripcion DESC
+	Limit 1;
+
+	Select count(*) into temp
+	From Parcial p
+	Where p.id_alumno = idAlumno AND p.id_cursada = idCursada AND p.nota < 4;
+
+	IF temp > 1 THEN
+	   UPDATE Alumno_comision
+	   SET estado_inscripcion = 'Libre'
+	   WHERE id_comision = idComision AND id_alumno = idAlumno;
+	   Select 'El alumno quedó libre en esa cursada';
+	   Select * from Alumno_comision WHERE id_comision = idComision AND id_alumno = idAlumno;
+	   LEAVE proc_label;
+	END IF;
+
+	Select count(*) into temp
+	From Parcial p
+	Where p.id_alumno = idAlumno AND p.id_cursada = idCursada AND p.nota > 3;
+
+	IF temp > 1 THEN
+	   UPDATE Alumno_comision
+	   SET estado_inscripcion = 'Regular'
+	   WHERE id_comision = idComision AND id_alumno = idAlumno;
+	   Select 'El alumno quedó regular en esa cursada';
+	   Select * from Alumno_comision WHERE id_comision = idComision AND id_alumno = idAlumno;
+	   LEAVE proc_label;
+	END IF;
+
+	
+END//
 delimiter ;
