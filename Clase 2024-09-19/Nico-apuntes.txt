@@ -1,0 +1,79 @@
+Entramos a una etapa a donde cambiamos la optica de lo que estamos trabajando.
+Las DB generalmente se crean para darle soporte a una organizacion que generalmente desarrolla una activad, en esa actividad debe apoyarse en algún sistema de información, estos sistemas de informacion se suelen basar en DBs. Entonces los datos guardados en la DB deben reflejar lo que es relevante para la organizacion. Para que estos datos tengan cierta relevancia se suelen armar DBs de tipo transaccional, ya que va a permitir registrar cada una de las actividades de la organización. Esto es todo con el objetivo de reflejar la actividad que se desarrolla en el sistema.
+
+Al desarrollar una DB transaccional se le presta mucha atención a que esa DB asegure la calidad de los datos, entonces se asume que la db debe respetar ciertas reglas de gestión que se deben implementar de alguna manera. Para darle calidad y consistencia a los datos. Como siempre nosotros trabajamos todas esas reglas a nivel de la DB.
+
+Es muy necesario tener un diseño de la BD que te permita plantear estas restricciones y mantener consistencia en los datos. Restricciones como claves primarias y foreign, dominios para representar, ademas utilizamos un esquema de programacion para la base (funciones almacenadas, procedures, triggers), todo esto para que la DB registre lo que corresponda con las reglas del negocio, que sean datos reales y confiables, que sirvan al momento de recuperarlos. Toda esta implementacion es para asegurar que estos datos representan las transacciones de la vida real.
+
+Es muy importante los datos y la calidad de estos. Son tan importantes porque el sistema trabaja día a día, estará siempre haciendo operaciones y se van registrando muchisimas transacciones, por lo que desde el punto de vista operativo toda esta implementación es muy importante. Pero las organizaciones ""modernas"" crecen de una forma en la que no dejan que sus decisiones se tomen con solo instinto o sensaciones, la idea es que la DB brinde herramientas para poder ver información sobre la organización, cómo esta hoy, como estuvo y que tendencias pueden aparecer. Esto solo se puede hacer si esta implementación asegura la calidad de la información.
+
+La org. se hace la pregunta ¿De esta DB, que información puedo sacar para tomar decisiones? El primer recurso que se usó es que la gente de sistemas la saque de la DB, entonces la info se presentaba a través de listados o informes, donde se hacía un analisis manual de la situación de la org. Con el tiempo esto se empezo a complicar cuando se tenia que determinar la situacion en un contexto cada vez mas dinamico. Entonces nace la necesidad de tomar decisiones muy rapidas y de la forma mas objetiva posible, para que las decisiones sean lo mas objetiva posible, es muy importante que la gente que estudia estos datos tenga acceso a la información en la DB, entonces se deben cumplir dos conidicones que la informacion sea cierta, consistente, real, y por otro lado que sea rápida. Entonces cada persona que quiere tener acceso a esta info para tomar decisiones deberia tener acceso a un sistema de consulta y analisis de datos.
+
+Generalmente los actores de cualquier nivel siempre trabajan con un sistema de información transaccional para registrar los datos.
+Pero hay otro tipo de actor fundamental, los que deciden, estos necesitan acceder al sistema transaccional, el problema es que los que toman decisiones normalente no tienen dominio informático o no es gente de sistemas, entonces el que decide no debería trabajar directamente sobre un sistema transaccional. El que decide suele trabajar sobre un sistema que permita soportar las decisiones (un sistema de soporte de decisiones != sistema transaccional). El sistema de soporte es alimentado por el transaccional, para poder alimentarlo se debe hacer un proceso intermedio que permita realizar la adecuada acomodamiento de los datos para que cualquier usuario los pueda utilizar, sea o no especialista en la toma de decisiones.
+
+Hasta ahora hemos trabajado para que el sistema transaccional este OK, nuestra segunda etapa ahora es armar un modelito para soporte de decisiones, lo que vamos a construir es desde el sistema intermedio hasta el de soporte de decisiones, para terminar el esquema de soporte para los usuarios de una org.
+
+La toma de decision es a todo nivel organizacional.
+Ventaja del sistema automatizado: Te permite ver un gran rango en el tiempo, el tiempo es una de las variables fundamentales que vamos a tener que implementar. La idea es que en este sistema de soporte exista toda la información integrada. Es clave que el sistema integre la información.
+
+Los sistemas de soporte de decision no son solo una DB, tambien involucran la DB y algunos procedimientos o tecnicas que nos permitan hacer analisis de distinto tipo, hay un analisis descriptivo (pasado), uno de la situacion actual y estaría bueno que pueda tener predicciones para el futuro.
+
+Qué es el data warehouse?
+El sistema de soporte se basa fundamentalmente en un data warehouse, en primer instancia el data warehouse va a ser el primer elemento que vamos a desarrollar para hacer la integración de la información para los que quieren tomar decisiones. Como el warehouse es un esquema integrador, generalmente se alimenta de muchos origenes de datos, pueden ser DBs transaccional, .csv, una API, etc. Hay que pensar que el warehouse se nutre de muchas fuentes de datos, no de una sola. El esquema exige tener en cuenta todos los origenes para que la información sea integrada y completa.
+
+Otro concepto interesante es la minería de datos, es buscar cuestiones ocultas en los datos, que no estan a simple vista.
+El esquema que vamos a trabajar esta en el power, es lo que vamos a hacer en el proyecto.
+Muchos origenes de datos, un almacen de datos y en el medio todo un proceso de extracción y carga de datos.
+Muchas veces hay que traer informacion externa, publica o paga, para poder completar los datos.
+El bloque del medio, del proceso, es el "ETL", es el proceso clave, es el que nos permite extraer la informacion de todos los origenes de datos, transformarla tal que en el proceso de integracion no solo se unifiquen, sino que tambien se limpien los datos, y finalmente permita hacer la carga en el warehouse. Hay diversas formas de hacer este proceso, probablemente lo hagamos con SQL, pero hay varias herramientas para hacer varios procesos de reacción y transformación de datos. Estos procesos pueden llegar a hacer muy pero muy complejos si el warehouse es muy grande, nosotros vamos a implementar algo pequeño para simplificar. Lo ultimo es ver como vamos a extraer los datos, qué consultas y como lo vamos a presentar. Vamos a usar un soft para extraer la data del warehouse y mostrarla de distintas formas.
+
+Cómo ver la intelegencia de negocio?
+Datos + Analisis = Conocimiento.
+Las org cada vez buscan tener mas conocimiento, esto es lo que las diferencia del resto, mas conocimiento les deja tomar mejores decisiones y tener mas probabilidad de exito. Los datos tienen que ser buenos datos que no pierdan cosas en el camino, luego hay muchas tecnicas de analisis que nosotros no vamos a tocar, pueden haber tecnicas muuuy complejas, todo con el objetivo de obtener conocimiento.
+
+HAY BIBLIOGRAFÍA PARA LEER 160 PAG.
+Lo primero que hay que tener claro es el origen de datos, cuales son los requerimientos, para esto hay que tener muy en claro que es lo que se quiere hacer, todo es de acuerdo a lo que quiere preguntar el usuario.
+
+
+MODELO ESTRELLA:
+Los warehouse tienen uno o mas origenes de datos, se procesan y obtenes el warehouse. Nosotros vamos a hacer una instancia de construir el data warehouse, esta es una tecnología más vieja que se esta reemplazando con la tecnologia de BIG DATA, que funciona distinto pero con el mismo objetivo. Los que toman las decisiones lo van a hacer a través de un software, por lo que los datos siempre salen, los warehouse son solo para consulta de datos, nunca se hace una transacción en un sistema de almacen de datos, se preparan para que cualquier usuario pueda leer los datos. Solo se actualizan cuando se trae información de los origenes de datos, incremetando la cantidad de datos que haya en el data warehouse. Esta actualizacion puede ser manual, parcial, automatica, automatica parcial...
+Como los warehouse suelen ser base de datos, hay que hacer otro DER (dasffffffdasfsafasdfsfsdafweijwef983isfj pain peko), este DER tiene cuestiones muy particulares. El modelo de datos que se va a elaborar con un formato que se llama, para este caso, de estrella.
+Un diagrama de estrella es un modelo de datos que tiene una caracteristica muy particular, el modelo se basa en la creación de tablas centrales llamadas "tablas de hechos", son las tablas donde se registran los datos que se quieren analizar. Va a ocurrir que los datos se quieren estudiar desde distintas perspectivas, que nosotros vamos a llamar dimensiones, (ej: por el tiempo, por docente, por materia), el modelo debe concentrarse que es lo que queremos estudiar y en base a que perspectivas. Puedes ser un modelo con muchas tablas de hechos, porque queremos analizar muchas cosas. Este modelo tiene origen en el origen de datos, se deben conocer bien los origenes de datos para hacer el DER bien. Obviamente tiene atributos.
+Cuando pasamos a este lado, no importa mucho la redundancia, esta permitida la redundancia de datos porque no es transaccional, hay que tener cuidado entonces en el proceso ETL para ver como se van a cargar las tablas. La consistencia no pasa por la transaccion, sino por la definicion de un buen modelo de extracción.
+Tenemos tablas de hecho y tabla de dimension, SIEMPRE TIENE QUE ESTAR LA TABLA DE DIMENSION DEL TIEMPO, un warehouse sin tiempo no sirve para nada. La tabla de hechos tiene los datos que quiero trabajar y las metricas, lo que quiero medir y cómo, con que nivel de detalle. Las dimensiones ponen en contexto los datos, las perspectivas en las que vamos a analizar esos datos. Las dimensionas con hechos se relacionan con claves, siempre de Hechos a Dimensiones, nunca al reves.
+En las dimensiones puede haber redundancia y la escalabilidad es todo un tema en el warehouse, si es muy complejo el sistema estrella no sería el más adecuado, tambien hay otras formas mejores copito de nieve y esquema galaxia.
+
+TRABAJO A REALIZAR:
+Es un proceso que lleva su tiempo.
+
+PASOS/ACTIVIDADES a desarrollar:
+
+Metodología Hefesto, es una de las metodologías que se usan para hacer warehouse, esto se explica mejor en la bibliografía. 
+
+1. Encontrar algo que satisfaga. Generalmente trabajamos debido a la demanda de alguien que quiere saber algo, entonces lo primero que tenemos que hacer es encontrar una fuente de datos que nos interese y de la cual creemos que podemos sacar algun tipo de información. La fuente de datos debe tener al menos más de 1500 datos. Lo importante es que tenga algo útil y que nos interese.
+
+--- Etapa de requerimientos.
+
+2. Sobre esta fuente, hay que hacer un analisis que implica determinar qué preguntas se le podrían hacer a esa fuente de datos, que permitan ver algun tipo de comportamiento.
+
+3. Definir los indicadores fundamentales y la perspectiva, (ej: cual es el total de productos vendidos en el periodo de 6 meses? -> indicador de cant de productos con la perspectiva del tiempo)
+
+4. Armar un primer modelo conceptual que debe armarse bien, nos va a orientar en el modelo de estrella.
+
+--------------------------------
+
+5. Como se calculan / obtienen los indicadores, se debe especificar claramente. Ya empezar a refinar el modelo conceptual base para el modelo de datos.
+
+6. Granularidad -> Nivel de detalle de lo que yo quiero estudiar, movimiento por movimiento, movimientos agregados.
+
+7. Armar el modelo del warehouse. Materializar el modelo de estrella. (Min 3 dimensiones para cada tabla de hechos).
+
+8. El paso más técnico, la programación del ETL (lo sugerido es a nivel SQL, pero se puede usar una herramienta gráfica).
+
+9. Hacer una visualización, hacer que el warehouse sirva para algo. 
+
+
+Aclaración que no vamos a ver en esta materia: ESTO NO ES LO MISMO A BIG DATA, es un paso más y trabaja con otra tecnología.
+El almacen siempre todo en mysql.
+

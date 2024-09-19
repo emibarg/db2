@@ -286,6 +286,8 @@ Pasivo, cancelar todas las cuotas relacionadas.
 ● Crear un procedimiento que permita actualizar cuota como pagada y
 descontar del saldo del socio.
 
+UPDATE socio SET saldo = 1200;
+
 delimiter //
 CREATE PROCEDURE cambiarSocioEstado(IN pId int, IN pEstado varchar(50))
 proc_label:BEGIN
@@ -314,3 +316,6 @@ proc_label:BEGIN
 	 commit;
 END//
 delimiter ;
+
+delimiter //
+CREATE PROCEDURE
