@@ -108,7 +108,7 @@ delimiter ;
 
 
 delimiter //
-CREATE PROCEDURE updCompletaOrden (in _ordenID INT, in _completadoFecha DATE)
+CREATE PROCEDURE updCompletaOrden (in _ordenID INT)
 proc_label:BEGIN
     -- Agregar código para este procedimiento
 DECLARE tempOrden int DEFAULT 0;
@@ -126,13 +126,9 @@ IF tempOrden = 0 then
     LEAVE proc_label;
 end if;
 
-IF _completadoFecha < (SELECT ordenFecha FROM Orden WHERE ordenID = _ordenID) then
-    select 'Fecha no válida' as mensaje;
-    ROLLBACK;
-    LEAVE proc_label;
-end if;
 
-UPDATE Orden SET completadoFecha = _completadoFecha, estado = 'F' WHERE ordenID = _ordenID;
+
+UPDATE Orden SET  estado = 'F' WHERE ordenID = _ordenID;
 UPDATE Clientes SET cantidadEntregado = cantidadEntregado + (SELECT cantidad FROM Orden WHERE ordenID = _ordenID) WHERE clienteID = (SELECT clienteID FROM Orden WHERE ordenID = _ordenID);
 COMMIT;
 
