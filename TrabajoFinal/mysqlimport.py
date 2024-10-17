@@ -1,14 +1,19 @@
 import pandas as pd
 from sqlalchemy import create_engine
+from dotenv import load_dotenv
+import os
+
+
+load_dotenv()
 
 # Step 1: Load the cleaned CSV into a pandas DataFrame
 df = pd.read_csv('NASA_CLEAN.csv', low_memory=False)
 
 # Step 2: Define MySQL connection details
-username = 'root'
-password = 'Nano01234'
-host = 'localhost'  # or '127.0.0.1' or your MySQL server IP address
-database = 'NASA'
+username = os.getenv('MYSQL_USER')
+password = os.getenv('MYSQL_PASS')
+host = os.getenv('MYSQL_HOST')  # or '127.0.0.1' or your MySQL server IP address
+database = os.getenv('MYSQL_DB')
 
 
 # Step 3: Create a connection with a collation compatible with MariaDB
