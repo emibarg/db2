@@ -56,9 +56,9 @@ CREATE TABLE DescubrimientoExoplaneta (
   idPlaneta int not null,
   idAnioDesc int not null,
   idAnioPaper int not null,
-  PrecisionPercent float,
-  Distancia float not null,
-  InfoSobreEstrella BOOLEAN,
+  PrecisionPercent float default 0,
+  Distancia double not null,
+  InfoSobreEstrella BOOLEAN default false,
 
   PRIMARY KEY(idObservatorio,idMetodo,idPlaneta,idAnioDesc, idAnioPaper),
   FOREIGN KEY(idObservatorio) REFERENCES Observatorio(idObservatorio),
@@ -97,7 +97,7 @@ BEGIN
 START TRANSACTION;
 call cargarSistemas();
 INSERT INTO Planeta(nombrePlaneta, idSistema) 
-SELECT UNIQUE pl_name, idSistema from NASA.table_name JOIN DW.Sistema on NASA.table_name.hostname = DW.Sistema.nombreSistema where pl_name not in (SELECT UNIQUE nombrePlaneta from DW.Planeta);
+SELECT DISTINCT pl_name, idSistema from NASA.table_name JOIN DW.Sistema on NASA.table_name.hostname = DW.Sistema.nombreSistema where pl_name not in (SELECT UNIQUE nombrePlaneta from DW.Planeta);
 COMMIT;
 END//
 
@@ -115,7 +115,7 @@ END;
 
 START TRANSACTION;
 INSERT INTO Observatorio(nombreObservatorio)
-SELECT UNIQUE disc_facility from NASA.table_name where disc_facility not in ( SELECT UNIQUE nombreObservatorio FROM DW.Observatorio) ;
+SELECT UNIQUE disc_facility from NASA.table_name where disc_facility not in ( SELECT DISTINCT nombreObservatorio FROM DW.Observatorio) ;
 COMMIT;
 END// 
 delimiter ;
@@ -132,7 +132,7 @@ END;
 
 START TRANSACTION;
 INSERT INTO AnioDesc(Anio)
-SELECT UNIQUE disc_year from NASA.table_name where disc_year not in (SELECT UNIQUE  Anio from DW.AnioDesc);
+SELECT DISTINCT disc_year from NASA.table_name where disc_year not in (SELECT DISTINCT  Anio from DW.AnioDesc);
 COMMIT;
 END//
 delimiter ;
@@ -148,7 +148,7 @@ BEGIN
 END;
 START TRANSACTION;
 INSERT INTO AnioPaper (AnioMes)
-SELECT UNIQUE disc_pubdate from NASA.table_name where disc_pubdate NOT IN (SELECT UNIQUE AnioMes from DW.AnioPaper);
+SELECT DISTINCT disc_pubdate from NASA.table_name where disc_pubdate NOT IN (SELECT DISTINCT AnioMes from DW.AnioPaper);
 COMMIT;
 END//
 delimiter ;
@@ -168,39 +168,43 @@ END;
 START TRANSACTION;
 
 INSERT INTO Metodo(nombreMetodo)
-SELECT UNIQUE discoverymethod FROM NASA.table_name where discoverymethod not in (SELECT UNIQUE nombreMetodo from DW.Metodo );
+SELECT DISTINCT discoverymethod FROM NASA.table_name where discoverymethod not in (SELECT DISTINCT nombreMetodo from DW.Metodo );
 COMMIT;
 END//
 delimiter ;
 
 delimiter //
 CREATE PROCEDURE cargarDescubrimientos()
-proc_label:BEGIN
-
-DECLARE EXIT HANDLER FOR SQLEXCEPTION
 BEGIN
-  rollback;
-  SELECT 'ERROR EN TRANSACTION' AS MESSAGE;
-END;
+    DECLARE EXIT HANDLER FOR SQLEXCEPTION
+    BEGIN
+        ROLLBACK;
+        SELECT 'ERROR EN TRANSACTION' AS MESSAGE;
+    END;
 
-START TRANSACTION;
+    START TRANSACTION;
 
-call cargarPlanetas();
-call cargarMetodos();
-call cargarAnioDesc();
-call cargarAnioPaper();
-call cargarObservatorios();
+    -- Load data into dependent tables in correct order
+    CALL cargarPlanetas();
+    CALL cargarMetodos();
+    CALL cargarAnioDesc();
+    CALL cargarAnioPaper();
+    CALL cargarObservatorios();
 
-INSERT INTO DescubrimientoExoplaneta(idPlaneta, idObservatorio, idMetodo, idAnioDesc, idAnioPaper, Distancia)
-SELECT UNIQUE p.idPlaneta, o.idObservatorio, m.idMetodo, ad.idAnio, ap.idAnio, tn.sy_dist
-FROM NASA.table_name tn JOIN DW.Planeta p on p.nombrePlaneta = tn.pl_name 
-JOIN DW.Observatorio o on o.nombreObservatorio = tn.disc_facility 
-JOIN DW.Metodo m on m.nombreMetodo = tn.discoverymethod
-JOIN DW.AnioDesc ad on ad.Anio = tn.disc_year 
-JOIN DW.AnioPaper ap on ap.AnioMes = tn.disc_pubdate;
+    -- Insert into the final DescubrimientoExoplaneta table
+   INSERT INTO DescubrimientoExoplaneta(idPlaneta, idObservatorio, idMetodo, idAnioDesc, idAnioPaper, Distancia)
+SELECT DISTINCT p.idPlaneta, o.idObservatorio, m.idMetodo, ad.idAnio, ap.idAnio, tn.sy_dist
+FROM NASA.table_name tn
+JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
+JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
+JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
+JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
+JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
+ON DUPLICATE KEY UPDATE 
+    Distancia = VALUES(Distancia);
 
 
+    COMMIT;
+END//
 
-COMMIT;
-END //
 delimiter ;
