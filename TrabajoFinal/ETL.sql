@@ -193,16 +193,20 @@ BEGIN
 
     -- Insert into the final DescubrimientoExoplaneta table
    INSERT INTO DescubrimientoExoplaneta(idPlaneta, idObservatorio, idMetodo, idAnioDesc, idAnioPaper, Distancia)
-SELECT DISTINCT p.idPlaneta, o.idObservatorio, m.idMetodo, ad.idAnio, ap.idAnio, tn.sy_dist
+SELECT DISTINCT p.idPlaneta, o.idObservatorio, m.idMetodo, ad.idAnio, ap.idAnio, AVG(tn.sy_dist)
 FROM NASA.table_name tn
 JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
 JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
 JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
 JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
 JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
-ON DUPLICATE KEY UPDATE 
-    Distancia = VALUES(Distancia);
+GROUP BY p.idPlaneta, o.idObservatorio, m.idMetodo, ad.idAnio, ap.idAnio;
 
+UPDATE DescubrimientoExoplaneta
+  SET InfoSobreEstrella=true
+  WHERE idPlaneta in (SELECT p.idPlaneta
+                      FROM DW.Planeta p JOIN NASA.table_name tn ON p.nombrePlaneta = tn.pl_name
+                      WHERE tn.hostname NOT LIKE '-1' AND tn.st_rad  not LIKE '-1' and tn.st_spectype  not LIKE '-1');
 
     COMMIT;
 END//
