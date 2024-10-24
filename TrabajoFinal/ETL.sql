@@ -153,6 +153,29 @@ COMMIT;
 END//
 delimiter ;
 
+delimiter // 
+CREATE PROCEDURE countNull(in pidPlaneta int, in pidObservatorio int,in pidMetodo int,in pidAnioDesc int,in pidAnioPaper int,in columnName varchar(50), out success int) 
+
+BEGIN
+
+SET @sql = CONCAT('Select Count(tn.',columnName,') into @success
+  from NASA.table_name tn 
+  JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
+JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
+JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
+JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
+JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
+WHERE p.idPlaneta =', pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper, ' and tn.', columnName,'=-1' );
+PREPARE stmt from @sql;
+execute stmt;
+deallocate prepare stmt;
+set success = @success;
+
+
+
+
+END //
+delimiter ;
 
 
 delimiter //
@@ -176,6 +199,7 @@ delimiter ;
 delimiter //
 CREATE PROCEDURE cargarDescubrimientos()
 BEGIN
+  DECLARE cantNull int default 0;
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
@@ -207,6 +231,9 @@ UPDATE DescubrimientoExoplaneta
   WHERE idPlaneta in (SELECT p.idPlaneta
                       FROM DW.Planeta p JOIN NASA.table_name tn ON p.nombrePlaneta = tn.pl_name
                       WHERE tn.hostname NOT LIKE '-1' AND tn.st_rad  not LIKE '-1' and tn.st_spectype  not LIKE '-1');
+
+
+
 
     COMMIT;
 END//
