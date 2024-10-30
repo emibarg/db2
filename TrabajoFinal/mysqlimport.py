@@ -11,7 +11,7 @@ df = pd.read_csv('NASA_CLEAN2.csv', low_memory=False)
 
 # Step 2: Define MySQL connection details
 username = 'root'
-password = 'Nano01234'
+password = ''
 host = 'localhost'  # or '127.0.0.1' or your MySQL server IP address
 database = 'NASA'
 
