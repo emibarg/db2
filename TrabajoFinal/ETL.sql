@@ -178,7 +178,8 @@ delimiter //
 CREATE PROCEDURE calcError(in pidPlaneta int, in pidObservatorio int,in pidMetodo int,in pidAnioDesc int,in pidAnioPaper int,in columnName varchar(50), out errorPorciento float)
 proc_label:BEGIN
 
-DECLARE columnNameERR1 varchar(50);select suma as 'Error porcentual sin nulos';
+DECLARE columnNameERR1 varchar(50);
+
 
 DECLARE columnNameERR2 varchar(50);
 DECLARE numMediciones int;
@@ -272,7 +273,10 @@ execute stmt;
 deallocate prepare stmt;
 set temp = @temp;
 
-
+IF temp = 0 THEN
+   Select temp, suma, numMediciones, numMedicionesNulas, pidPlaneta, pidObservatorio, pidMetodo, pidAnioDesc, pidAnioPaper, columnName, columnNameERR1, columnNameERR2;
+   LEAVE proc_label;
+END IF;
 
 SET suma = 100 * suma / temp;
 
@@ -315,11 +319,18 @@ CREATE PROCEDURE cargarDescubrimientos()
 BEGIN
   DECLARE valorFinal float default 0;
   DECLARE temp float default 0;
-    DECLARE EXIT HANDLER FOR SQLEXCEPTION
-    BEGIN
-        ROLLBACK;
-        SELECT 'ERROR EN TRANSACTION' AS MESSAGE;
-    END;
+  DECLARE credits int default false;
+  DECLARE cidPlaneta int;
+  DECLARE cidObservatorio int;
+  DECLARE cidMetodo int;
+  DECLARE cidAnioDesc int;
+  DECLARE cidAnioPaper int;
+  DECLARE row_cursor CURSOR FOR 
+  SELECT idPlaneta, idObservatorio, idMetodo, idAnioDesc, idAnioPaper
+  from DescubrimientoExoplaneta;
+
+  DECLARE CONTINUE HANDLER FOR NOT FOUND SET credits = true;
+    
 
     START TRANSACTION;
 
@@ -351,6 +362,95 @@ UPDATE DescubrimientoExoplaneta
 
 
     COMMIT;
+    open row_cursor;
+
+read_loop: LOOP
+  FETCH row_cursor INTO cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper;
+  IF credits THEN
+    LEAVE read_loop;
+  END IF;
+  SET valorFinal = 0;
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_orbper', temp);
+  SET valorFinal = valorFinal + temp;
+  
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_orbsmax', temp);
+  SET valorFinal = valorFinal + temp;
+  
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_rade', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_masse', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_msinie', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_cmasse', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_bmasse', temp);
+  SET valorFinal = valorFinal + temp;
+
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_dens', temp);
+  SET valorFinal = valorFinal + temp;
+
+ 
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_insol', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_eqt', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_orbincl', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_tranmid', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_imppar', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_trandep', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_trandur', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_ratdor', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_ratror', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_occdep', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_orbtper', temp);
+  SET valorFinal = valorFinal + temp;
+
+
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_rvamp', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_projobliq', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_trueobliq', temp);
+  SET valorFinal = valorFinal + temp;
+
+UPDATE DescubrimientoExoplaneta
+  SET PrecisionPercent = (valorFinal/25)
+  WHERE idPlaneta = cidPlaneta AND idObservatorio = cidObservatorio AND idMetodo = cidMetodo AND idAnioDesc = cidAnioDesc AND idAnioPaper = cidAnioPaper;
+
+END LOOP;
+
+CLOSE row_cursor;
+
 END//
 
 delimiter ;
+
+
