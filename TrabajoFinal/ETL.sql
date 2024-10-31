@@ -178,7 +178,8 @@ delimiter //
 CREATE PROCEDURE calcError(in pidPlaneta int, in pidObservatorio int,in pidMetodo int,in pidAnioDesc int,in pidAnioPaper int,in columnName varchar(50), out errorPorciento float)
 proc_label:BEGIN
 
-DECLARE columnNameERR1 varchar(50);
+DECLARE columnNameERR1 varchar(50);select suma as 'Error porcentual sin nulos';
+
 DECLARE columnNameERR2 varchar(50);
 DECLARE numMediciones int;
 DECLARE numMedicionesNulas int;
@@ -188,6 +189,9 @@ DECLARE suma float DEFAULT 0;
 SET columnNameERR1 = CONCAT(columnName, 'err1');
 SET columnNameERR2 = CONCAT(columnName, 'err2');
 
+
+
+
 SET  @sql = CONCAT('Select count(tn.',columnName,') into @numMediciones
 FROM NASA.table_name tn
 JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
@@ -195,7 +199,7 @@ JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility
 JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
 JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
 JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
-WHERE tn.',columnName,' != -1 and p.idPlaneta =', pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper
+WHERE p.idPlaneta =', pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper
 
 );
 PREPARE stmt from @sql;
@@ -204,7 +208,11 @@ deallocate prepare stmt;
 set numMediciones = @numMediciones;
 
 
+
+
 call countNull(pidPlaneta, pidObservatorio, pidMetodo, pidAnioDesc, pidAnioPaper, columnName, numMedicionesNulas);
+
+
 
 IF numMediciones = numMedicionesNulas THEN
    SET errorPorciento = 100;
@@ -225,6 +233,8 @@ execute stmt;
 deallocate prepare stmt;
 set suma = @suma;
 
+
+
 SET @sql = CONCAT('Select SUM(ABS(tn.',columnNameERR2,')) into @temp
 FROM NASA.table_name tn
 JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
@@ -241,8 +251,13 @@ deallocate prepare stmt;
 set temp = @temp;
 
 
+
 SET suma = suma + temp;
-SET @sql = CONCAT('Select AVG(tn.',columnNameERR2,') into @temp
+
+
+
+
+SET @sql = CONCAT('Select AVG(tn.',columnName,') into @temp
 FROM NASA.table_name tn
 JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
 JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
@@ -258,10 +273,21 @@ deallocate prepare stmt;
 set temp = @temp;
 
 
+
 SET suma = 100 * suma / temp;
+
+
+IF numMedicionesNulas = 0 THEN
+   set errorPorciento = suma;
+   LEAVE proc_label;
+END IF;
+
+
 SET suma = (suma + numMedicionesNulas * 100) / numMediciones;
 
 set errorPorciento = suma;
+
+
 
 END //
 delimiter ;
@@ -287,7 +313,8 @@ delimiter ;
 delimiter //
 CREATE PROCEDURE cargarDescubrimientos()
 BEGIN
-  DECLARE cantNull int default 0;
+  DECLARE valorFinal float default 0;
+  DECLARE temp float default 0;
     DECLARE EXIT HANDLER FOR SQLEXCEPTION
     BEGIN
         ROLLBACK;
