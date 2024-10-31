@@ -81,7 +81,7 @@ END;
 
 START TRANSACTION;
 INSERT INTO Sistema (nombreSistema) 
-SELECT UNIQUE hostname from NASA.table_name where hostname not in(SELECT UNIQUE nombreSistema from DW.Sistema );
+SELECT DISTINCT hostname from NASA.table_name where hostname not in(SELECT DISTINCT nombreSistema from DW.Sistema );
 COMMIT;
 END//
 delimiter ;
@@ -97,7 +97,7 @@ BEGIN
 START TRANSACTION;
 call cargarSistemas();
 INSERT INTO Planeta(nombrePlaneta, idSistema) 
-SELECT DISTINCT pl_name, idSistema from NASA.table_name JOIN DW.Sistema on NASA.table_name.hostname = DW.Sistema.nombreSistema where pl_name not in (SELECT UNIQUE nombrePlaneta from DW.Planeta);
+SELECT DISTINCT pl_name, idSistema from NASA.table_name JOIN DW.Sistema on NASA.table_name.hostname = DW.Sistema.nombreSistema where pl_name not in (SELECT DISTINCT  nombrePlaneta from DW.Planeta);
 COMMIT;
 END//
 
@@ -115,7 +115,7 @@ END;
 
 START TRANSACTION;
 INSERT INTO Observatorio(nombreObservatorio)
-SELECT UNIQUE disc_facility from NASA.table_name where disc_facility not in ( SELECT DISTINCT nombreObservatorio FROM DW.Observatorio) ;
+SELECT DISTINCT disc_facility from NASA.table_name where disc_facility not in ( SELECT DISTINCT nombreObservatorio FROM DW.Observatorio) ;
 COMMIT;
 END// 
 delimiter ;
