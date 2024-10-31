@@ -188,14 +188,21 @@ DECLARE suma float DEFAULT 0;
 SET columnNameERR1 = CONCAT(columnName, 'err1');
 SET columnNameERR2 = CONCAT(columnName, 'err2');
 
-Select count(tn.columnName) into numMediciones
+SET  @sql = CONCAT('Select count(tn.',columnName,') into @numMediciones
 FROM NASA.table_name tn
 JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
 JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
 JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
 JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
 JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
-WHERE tn.columnName != -1 and p.idPlaneta =, pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper;
+WHERE tn.',columnName,' != -1 and p.idPlaneta =', pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper
+
+);
+PREPARE stmt from @sql;
+execute stmt;
+deallocate prepare stmt;
+set numMediciones = @numMediciones;
+
 
 call countNull(pidPlaneta, pidObservatorio, pidMetodo, pidAnioDesc, pidAnioPaper, columnName, numMedicionesNulas);
 
@@ -203,46 +210,58 @@ IF numMediciones = numMedicionesNulas THEN
    SET errorPorciento = 100;
    LEAVE proc_label;
 END IF;
- 
-Select SUM(ABS(tn.columnNameERR1)) into suma
+SET @sql = CONCAT('Select SUM(ABS(tn.',columnNameERR1,')) into @suma
 FROM NASA.table_name tn
 JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
 JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
 JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
 JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
 JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
-WHERE tn.columnName != -1 and p.idPlaneta =, pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper;
+WHERE tn.',columnName,' != -1 and p.idPlaneta =', pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper
 
-Select SUM(ABS(tn.columnNameERR2)) into temp
+);
+PREPARE stmt from @sql;
+execute stmt;
+deallocate prepare stmt;
+set suma = @suma;
+
+SET @sql = CONCAT('Select SUM(ABS(tn.',columnNameERR2,')) into @temp
 FROM NASA.table_name tn
 JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
 JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
 JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
 JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
 JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
-WHERE tn.columnName != -1 and p.idPlaneta =, pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper;
+WHERE tn.',columnName,' != -1 and p.idPlaneta =', pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper
+
+);
+PREPARE stmt from @sql;
+execute stmt;
+deallocate prepare stmt;
+set temp = @temp;
+
 
 SET suma = suma + temp;
-
-Select AVG(tn.columnName) into temp
+SET @sql = CONCAT('Select AVG(tn.',columnNameERR2,') into @temp
 FROM NASA.table_name tn
 JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
 JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
 JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
 JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
 JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
-WHERE tn.columnName != -1 and p.idPlaneta =, pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper;
+WHERE tn.',columnName,' != -1 and p.idPlaneta =', pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper
+
+);
+PREPARE stmt from @sql;
+execute stmt;
+deallocate prepare stmt;
+set temp = @temp;
+
 
 SET suma = 100 * suma / temp;
 SET suma = (suma + numMedicionesNulas * 100) / numMediciones;
 
 set errorPorciento = suma;
-
-SET  @sql = CONCAT();
-PREPARE stmt from @sql;
-execute stmt;
-deallocate prepare stmt;
-set errorPorciento = @errorPorciento;
 
 END //
 delimiter ;
