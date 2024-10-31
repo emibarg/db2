@@ -320,6 +320,7 @@ BEGIN
   DECLARE valorFinal float default 0;
   DECLARE temp float default 0;
   DECLARE credits int default false;
+  DECLARE counter int default 0;
   DECLARE cidPlaneta int;
   DECLARE cidObservatorio int;
   DECLARE cidMetodo int;
@@ -442,9 +443,11 @@ read_loop: LOOP
   SET valorFinal = valorFinal + temp;
 
 UPDATE DescubrimientoExoplaneta
-  SET PrecisionPercent = (valorFinal/25)
+  SET PrecisionPercent = (valorFinal/23)
   WHERE idPlaneta = cidPlaneta AND idObservatorio = cidObservatorio AND idMetodo = cidMetodo AND idAnioDesc = cidAnioDesc AND idAnioPaper = cidAnioPaper;
 
+  SET counter = counter + 1;
+  SELECT CONCAT(counter, '/5759') as 'Progress';
 END LOOP;
 
 CLOSE row_cursor;
@@ -452,5 +455,47 @@ CLOSE row_cursor;
 END//
 
 delimiter ;
+
+
+delimiter //
+CREATE PROCEDURE cargarErrores()
+BEGIN
+DECLARE i int default 0;
+DECLARE MaxSize int default 0;
+DECLARE temp float default 0;
+DECLARE valorFinal float default 0;
+
+CREATE TABLE temporal_table (
+  idTemp int PRIMARY KEY AUTO_INCREMENT,
+  idObservatorio int not null,
+  idMetodo int not null,
+  idPlaneta int not null,
+  idAnioDesc int not null,
+  idAnioPaper int not null,
+  PrecisionPercent float default 0,
+);
+
+INSERT INTO temporal_table(idObservatorio, idMetodo, idPlaneta, idAnioDesc, idAnioPaper)
+VALUES (SELECT idObservatorio, idMetodo, idPlaneta, idAnioDesc, idAnioPaper);
+
+SELECT count(*) into MaxSize FROM temporal_table; 
+
+
+set i = 0;
+loop_label:LOOP
+	set i = i + 1;
+	IF i > MaxSize THEN
+	   LEAVE loop_label;
+	END IF;
+	CALL
+END LOOP;
+
+
+
+END//
+delimiter ;
+
+
+
 
 
