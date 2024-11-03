@@ -404,7 +404,6 @@ BEGIN
   SELECT "Data Inserted" AS 'Progress';
 
   SELECT COUNT(*) INTO MaxSize FROM temporal_table; 
-  SET MaxSize = 20;
 
   SELECT "MaxSize Calculated" AS 'Progress', MaxSize AS 'MaxSize';
 
