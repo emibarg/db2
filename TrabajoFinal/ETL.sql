@@ -273,8 +273,9 @@ execute stmt;
 deallocate prepare stmt;
 set temp = @temp;
 
-IF temp = 0 THEN
+IF (temp < 1 AND suma >= 1) THEN
    Select temp, suma, numMediciones, numMedicionesNulas, pidPlaneta, pidObservatorio, pidMetodo, pidAnioDesc, pidAnioPaper, columnName, columnNameERR1, columnNameERR2;
+    SET errorPorciento = 100;
    LEAVE proc_label;
 END IF;
 
@@ -461,9 +462,15 @@ delimiter //
 CREATE PROCEDURE cargarErrores()
 BEGIN
 DECLARE i int default 0;
+DECLARE counter int default 0;
 DECLARE MaxSize int default 0;
 DECLARE temp float default 0;
 DECLARE valorFinal float default 0;
+DECLARE cidPlaneta int;
+DECLARE cidObservatorio int;
+DECLARE cidMetodo int;
+DECLARE cidAnioDesc int;
+DECLARE cidAnioPaper int;
 
 CREATE TABLE temporal_table (
   idTemp int PRIMARY KEY AUTO_INCREMENT,
@@ -476,18 +483,97 @@ CREATE TABLE temporal_table (
 );
 
 INSERT INTO temporal_table(idObservatorio, idMetodo, idPlaneta, idAnioDesc, idAnioPaper)
-VALUES (SELECT idObservatorio, idMetodo, idPlaneta, idAnioDesc, idAnioPaper);
+VALUES (SELECT idObservatorio, idMetodo, idPlaneta, idAnioDesc, idAnioPaper FROM DescubrimientoExoplaneta);
 
 SELECT count(*) into MaxSize FROM temporal_table; 
 
-
+set counter = 0;
 set i = 0;
 loop_label:LOOP
 	set i = i + 1;
+  set valorFinal = 0;
+
 	IF i > MaxSize THEN
 	   LEAVE loop_label;
 	END IF;
-	CALL
+
+  Select idObservatorio, idMetodo, idPlaneta, idAnioDesc, idAnioPaper into cidObservatorio, cidMetodo, cidPlaneta, cidAnioDesc, cidAnioPaper from temporal_table where idTemp = i;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_orbper', temp);
+  SET valorFinal = valorFinal + temp;
+  
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_orbsmax', temp);
+  SET valorFinal = valorFinal + temp;
+  
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_rade', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_masse', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_msinie', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_cmasse', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_bmasse', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_dens', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_insol', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_eqt', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_orbincl', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_tranmid', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_imppar', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_trandep', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_trandur', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_ratdor', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_ratror', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_occdep', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_orbtper', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_rvamp', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_projobliq', temp);
+  SET valorFinal = valorFinal + temp;
+
+  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_trueobliq', temp);
+  SET valorFinal = valorFinal + temp;
+
+  SET valorFinal = valorFinal / 23;
+  SET valorFinal = 100 - valorFinal;
+
+  UPDATE temporal_table
+  SET PrecisionPercent = valorFinal
+  WHERE idTemp = i;
+
+  SET counter = counter + 1;
+  SELECT CONCAT(counter, '/5759') as 'Progress';
 END LOOP;
 
 
