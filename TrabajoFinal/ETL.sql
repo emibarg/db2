@@ -351,6 +351,8 @@ DECLARE cidMetodo int;
 DECLARE cidAnioDesc int;
 DECLARE cidAnioPaper int;
 
+DROP TABLE IF EXISTS temporal_table;
+
 CREATE TABLE temporal_table (
   idTemp int PRIMARY KEY AUTO_INCREMENT,
   idObservatorio int not null,
@@ -461,6 +463,11 @@ loop_label:LOOP
   SELECT CONCAT(counter, '/5759') as 'Progress';
 END LOOP;
 
+UPDATE DescubrimientoExoplaneta de
+SET de.PrecisionPercent = (SELECT PrecisionPercent FROM temporal_table tt WHERE tt.idPlaneta = de.idPlaneta AND tt.idObservatorio = de.idObservatorio AND tt.idMetodo = de.idMetodo AND tt.idAnioDesc = de.idAnioDesc AND tt.idAnioPaper = de.idAnioPaper)
+WHERE EXISTS (SELECT 1 FROM temporal_table tt WHERE tt.idPlaneta = de.idPlaneta AND tt.idObservatorio = de.idObservatorio AND tt.idMetodo = de.idMetodo AND tt.idAnioDesc = de.idAnioDesc AND tt.idAnioPaper = de.idAnioPaper);
+
+SELECT "Data Updated" as 'Progress';
 
 
 END//
