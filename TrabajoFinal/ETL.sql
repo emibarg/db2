@@ -174,128 +174,94 @@ set success = @success;
 END //
 delimiter ;
 
-delimiter //
-CREATE PROCEDURE calcError(in pidPlaneta int, in pidObservatorio int,in pidMetodo int,in pidAnioDesc int,in pidAnioPaper int,in columnName varchar(50), out errorPorciento float)
-proc_label:BEGIN
+DELIMITER //
 
-DECLARE columnNameERR1 varchar(50);
+CREATE PROCEDURE calcError(
+  IN pidPlaneta INT,
+  IN pidObservatorio INT,
+  IN pidMetodo INT,
+  IN pidAnioDesc INT,
+  IN pidAnioPaper INT,
+  IN columnName VARCHAR(50),
+  OUT errorPorciento FLOAT
+)
+BEGIN
+  DECLARE columnNameERR1 VARCHAR(50);
+  DECLARE columnNameERR2 VARCHAR(50);
+  DECLARE numMediciones INT DEFAULT 0;
+  DECLARE numMedicionesNulas INT DEFAULT 0;
+  DECLARE avgValue FLOAT DEFAULT 0;
+  DECLARE suma FLOAT DEFAULT 0;
+  DECLARE sumaERR1 FLOAT DEFAULT 0;
+  DECLARE sumaERR2 FLOAT DEFAULT 0;
 
+  -- Construct error column names
+  SET columnNameERR1 = CONCAT(columnName, 'err1');
+  SET columnNameERR2 = CONCAT(columnName, 'err2');
 
-DECLARE columnNameERR2 varchar(50);
-DECLARE numMediciones int;
-DECLARE numMedicionesNulas int;
-DECLARE temp float DEFAULT 0;
-DECLARE suma float DEFAULT 0;
+  -- Temporary table for capturing results
+  CREATE TEMPORARY TABLE tempResults (
+    numMediciones INT,
+    numMedicionesNulas INT,
+    sumaERR1 FLOAT,
+    sumaERR2 FLOAT,
+    avgValue FLOAT
+  );
 
-SET columnNameERR1 = CONCAT(columnName, 'err1');
-SET columnNameERR2 = CONCAT(columnName, 'err2');
+  -- Combined query to reduce the need for multiple statements
+  SET @sql = CONCAT('
+    INSERT INTO tempResults
+    SELECT 
+      COUNT(tn.', columnName, ') AS numMediciones,
+      SUM(CASE WHEN tn.', columnName, ' IS NULL THEN 1 ELSE 0 END) AS numMedicionesNulas,
+      SUM(ABS(tn.', columnNameERR1, ')) AS sumaERR1,
+      SUM(ABS(tn.', columnNameERR2, ')) AS sumaERR2,
+      AVG(tn.', columnName, ') AS avgValue
+    FROM NASA.table_name tn
+    JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
+    JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
+    JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
+    JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
+    JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
+    WHERE p.idPlaneta = ', pidPlaneta, '
+      AND o.idObservatorio = ', pidObservatorio, '
+      AND m.idMetodo = ', pidMetodo, '
+      AND ad.idAnio = ', pidAnioDesc, '
+      AND ap.idAnio = ', pidAnioPaper, '
+      AND tn.', columnName, ' != -1
+  ');
 
+  PREPARE stmt FROM @sql;
+  EXECUTE stmt;
+  DEALLOCATE PREPARE stmt;
 
+  -- Retrieve data from the temporary table into variables
+  SELECT numMediciones, numMedicionesNulas, sumaERR1, sumaERR2, avgValue
+  INTO numMediciones, numMedicionesNulas, sumaERR1, sumaERR2, avgValue
+  FROM tempResults;
 
+  -- Drop temporary table after use
+  DROP TEMPORARY TABLE tempResults;
 
-SET  @sql = CONCAT('Select count(tn.',columnName,') into @numMediciones
-FROM NASA.table_name tn
-JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
-JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
-JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
-JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
-JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
-WHERE p.idPlaneta =', pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper
+  -- Calculate total error sum
+  SET suma = sumaERR1 + sumaERR2;
 
-);
-PREPARE stmt from @sql;
-execute stmt;
-deallocate prepare stmt;
-set numMediciones = @numMediciones;
-
-
-
-
-call countNull(pidPlaneta, pidObservatorio, pidMetodo, pidAnioDesc, pidAnioPaper, columnName, numMedicionesNulas);
-
-
-
-IF numMediciones = numMedicionesNulas THEN
-   SET errorPorciento = 100;
-   LEAVE proc_label;
-END IF;
-SET @sql = CONCAT('Select SUM(ABS(tn.',columnNameERR1,')) into @suma
-FROM NASA.table_name tn
-JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
-JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
-JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
-JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
-JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
-WHERE tn.',columnName,' != -1 and p.idPlaneta =', pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper
-
-);
-PREPARE stmt from @sql;
-execute stmt;
-deallocate prepare stmt;
-set suma = @suma;
-
-
-
-SET @sql = CONCAT('Select SUM(ABS(tn.',columnNameERR2,')) into @temp
-FROM NASA.table_name tn
-JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
-JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
-JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
-JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
-JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
-WHERE tn.',columnName,' != -1 and p.idPlaneta =', pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper
-
-);
-PREPARE stmt from @sql;
-execute stmt;
-deallocate prepare stmt;
-set temp = @temp;
-
-
-
-SET suma = suma + temp;
-
-
-
-
-SET @sql = CONCAT('Select AVG(tn.',columnName,') into @temp
-FROM NASA.table_name tn
-JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
-JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
-JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
-JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
-JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
-WHERE tn.',columnName,' != -1 and p.idPlaneta =', pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper
-
-);
-PREPARE stmt from @sql;
-execute stmt;
-deallocate prepare stmt;
-set temp = @temp;
-
-IF (temp < 1 AND suma >= 1) THEN
-   Select temp, suma, numMediciones, numMedicionesNulas, pidPlaneta, pidObservatorio, pidMetodo, pidAnioDesc, pidAnioPaper, columnName, columnNameERR1, columnNameERR2;
+  -- Handle cases based on calculations
+  IF numMediciones = numMedicionesNulas THEN
     SET errorPorciento = 100;
-   LEAVE proc_label;
-END IF;
-
-SET suma = 100 * suma / temp;
-
-
-IF numMedicionesNulas = 0 THEN
-   set errorPorciento = suma;
-   LEAVE proc_label;
-END IF;
-
-
-SET suma = (suma + numMedicionesNulas * 100) / numMediciones;
-
-set errorPorciento = suma;
-
-
+  ELSEIF (avgValue < 1 AND suma >= 1) THEN
+    SET errorPorciento = 100;
+  ELSE
+    SET errorPorciento = 100 * suma / avgValue;
+    IF numMedicionesNulas > 0 THEN
+      SET errorPorciento = (errorPorciento + numMedicionesNulas * 100) / numMediciones;
+    END IF;
+  END IF;
 
 END //
-delimiter ;
+
+DELIMITER ;
+
 
 delimiter //
 
