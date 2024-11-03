@@ -200,23 +200,20 @@ BEGIN
   SET columnNameERR2 = CONCAT(columnName, 'err2');
 
   -- Temporary table for capturing results
+DROP TEMPORARY TABLE IF EXISTS tempResults;
   CREATE TEMPORARY TABLE tempResults (
-    numMediciones INT,
-    numMedicionesNulas INT,
-    sumaERR1 FLOAT,
-    sumaERR2 FLOAT,
-    avgValue FLOAT
+    pnumMediciones INT,
+    pnumMedicionesNulas INT,
+    psumaERR1 FLOAT,
+    psumaERR2 FLOAT,
+    pavgValue FLOAT
   );
 
-  -- Combined query to reduce the need for multiple statements
   SET @sql = CONCAT('
-    INSERT INTO tempResults
+    INSERT INTO tempResults(pnumMediciones, pnumMedicionesNulas)
     SELECT 
-      COUNT(tn.', columnName, ') AS numMediciones,
-      SUM(CASE WHEN tn.', columnName, ' IS NULL THEN 1 ELSE 0 END) AS numMedicionesNulas,
-      SUM(ABS(tn.', columnNameERR1, ')) AS sumaERR1,
-      SUM(ABS(tn.', columnNameERR2, ')) AS sumaERR2,
-      AVG(tn.', columnName, ') AS avgValue
+      COUNT(tn.', columnName, '),
+      SUM(CASE WHEN tn.', columnName, ' = -1 THEN 1 ELSE 0 END)
     FROM NASA.table_name tn
     JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
     JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
@@ -228,20 +225,56 @@ BEGIN
       AND m.idMetodo = ', pidMetodo, '
       AND ad.idAnio = ', pidAnioDesc, '
       AND ap.idAnio = ', pidAnioPaper, '
-      AND tn.', columnName, ' != -1
-  ');
-
+');
   PREPARE stmt FROM @sql;
   EXECUTE stmt;
   DEALLOCATE PREPARE stmt;
 
+
+
+
+
+SET @sql = CONCAT('
+    UPDATE tempResults
+    JOIN (SELECT 
+      SUM(ABS(tn.', columnNameERR1, ')) as a,
+      SUM(ABS(tn.', columnNameERR2, ')) as b,
+      AVG(tn.', columnName, ') as c
+    FROM NASA.table_name tn
+    JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
+    JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
+    JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
+    JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
+    JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
+    WHERE p.idPlaneta = ', pidPlaneta, '
+      AND o.idObservatorio = ', pidObservatorio, '
+      AND m.idMetodo = ', pidMetodo, '
+      AND ad.idAnio = ', pidAnioDesc, '
+      AND ap.idAnio = ', pidAnioPaper, '
+      AND tn.', columnName, ' != -1)
+      AS subquery
+      SET tempResults.psumaERR1 = subquery.a,
+      tempResults.psumaERR2 = subquery.b,
+      tempResults.pavgValue = subquery.c
+'
+);
+  PREPARE stmt FROM @sql;
+  EXECUTE stmt;
+  DEALLOCATE PREPARE stmt;
+
+
+
+
+
   -- Retrieve data from the temporary table into variables
-  SELECT numMediciones, numMedicionesNulas, sumaERR1, sumaERR2, avgValue
+  SELECT pnumMediciones, pnumMedicionesNulas, psumaERR1, psumaERR2, pavgValue
   INTO numMediciones, numMedicionesNulas, sumaERR1, sumaERR2, avgValue
   FROM tempResults;
 
   -- Drop temporary table after use
   DROP TEMPORARY TABLE tempResults;
+
+
 
   -- Calculate total error sum
   SET suma = sumaERR1 + sumaERR2;
@@ -336,55 +369,59 @@ END//
 
 delimiter ;
 
+DELIMITER //
 
-delimiter //
 CREATE PROCEDURE cargarErrores()
 BEGIN
-DECLARE i int default 0;
-DECLARE counter int default 0;
-DECLARE MaxSize int default 0;
-DECLARE temp float default 0;
-DECLARE valorFinal float default 0;
-DECLARE cidPlaneta int;
-DECLARE cidObservatorio int;
-DECLARE cidMetodo int;
-DECLARE cidAnioDesc int;
-DECLARE cidAnioPaper int;
+  DECLARE i INT DEFAULT 0;
+  DECLARE counter INT DEFAULT 0;
+  DECLARE MaxSize INT DEFAULT 0;
+  DECLARE temp FLOAT DEFAULT 0;
+  DECLARE valorFinal FLOAT DEFAULT 0;
+  DECLARE cidPlaneta INT;
+  DECLARE cidObservatorio INT;
+  DECLARE cidMetodo INT;
+  DECLARE cidAnioDesc INT;
+  DECLARE cidAnioPaper INT;
 
-DROP TABLE IF EXISTS temporal_table;
+  DROP TABLE IF EXISTS temporal_table;
 
-CREATE TABLE temporal_table (
-  idTemp int PRIMARY KEY AUTO_INCREMENT,
-  idObservatorio int not null,
-  idMetodo int not null,
-  idPlaneta int not null,
-  idAnioDesc int not null,
-  idAnioPaper int not null,
-  PrecisionPercent float default 0
-);
+  CREATE TABLE temporal_table (
+    idTemp INT PRIMARY KEY AUTO_INCREMENT,
+    idObservatorio INT NOT NULL,
+    idMetodo INT NOT NULL,
+    idPlaneta INT NOT NULL,
+    idAnioDesc INT NOT NULL,
+    idAnioPaper INT NOT NULL,
+    PrecisionPercent FLOAT DEFAULT 0
+  );
 
-Select "Table Created" as 'Progress';
+  SELECT "Table Created" AS 'Progress';
 
-INSERT INTO temporal_table(idObservatorio, idMetodo, idPlaneta, idAnioDesc, idAnioPaper)
-SELECT idObservatorio, idMetodo, idPlaneta, idAnioDesc, idAnioPaper FROM DescubrimientoExoplaneta;
+  INSERT INTO temporal_table(idObservatorio, idMetodo, idPlaneta, idAnioDesc, idAnioPaper)
+  SELECT idObservatorio, idMetodo, idPlaneta, idAnioDesc, idAnioPaper FROM DescubrimientoExoplaneta;
 
-Select "Data Inserted" as 'Progress';
+  SELECT "Data Inserted" AS 'Progress';
 
-SELECT count(*) into MaxSize FROM temporal_table; 
+  SELECT COUNT(*) INTO MaxSize FROM temporal_table; 
+  SET MaxSize = 20;
 
-Select "MaxSize Calculated" as 'Progress', MaxSize as 'MaxSize';
+  SELECT "MaxSize Calculated" AS 'Progress', MaxSize AS 'MaxSize';
 
-set counter = 0;
-set i = 0;
-loop_label:LOOP
-	set i = i + 1;
-  set valorFinal = 0;
+  SET counter = 0;
+  SET i = 0;
+  loop_label: LOOP
+    SET i = i + 1;
+    SET valorFinal = 0;
 
-	IF i > MaxSize THEN
-	   LEAVE loop_label;
-	END IF;
+    IF i > MaxSize THEN
+      LEAVE loop_label;
+    END IF;
 
-  Select idObservatorio, idMetodo, idPlaneta, idAnioDesc, idAnioPaper into cidObservatorio, cidMetodo, cidPlaneta, cidAnioDesc, cidAnioPaper from temporal_table where idTemp = i;
+    SELECT idObservatorio, idMetodo, idPlaneta, idAnioDesc, idAnioPaper 
+    INTO cidObservatorio, cidMetodo, cidPlaneta, cidAnioDesc, cidAnioPaper 
+    FROM temporal_table 
+    WHERE idTemp = i;
 
   CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_orbper', temp);
   SET valorFinal = valorFinal + temp;
@@ -455,25 +492,33 @@ loop_label:LOOP
   SET valorFinal = valorFinal / 23;
   SET valorFinal = 100 - valorFinal;
 
-  UPDATE temporal_table
-  SET PrecisionPercent = valorFinal
-  WHERE idTemp = i;
+    -- Update the temporal_table with the calculated valorFinal
+    UPDATE temporal_table
+    SET PrecisionPercent = valorFinal
+    WHERE idTemp = i;
 
-  SET counter = counter + 1;
-  SELECT CONCAT(counter, '/5759') as 'Progress';
-END LOOP;
+    SET counter = counter + 1;
+    SELECT CONCAT(counter, ' of ', MaxSize) AS 'Progress';
 
-UPDATE DescubrimientoExoplaneta de
-SET de.PrecisionPercent = (SELECT PrecisionPercent FROM temporal_table tt WHERE tt.idPlaneta = de.idPlaneta AND tt.idObservatorio = de.idObservatorio AND tt.idMetodo = de.idMetodo AND tt.idAnioDesc = de.idAnioDesc AND tt.idAnioPaper = de.idAnioPaper)
-WHERE EXISTS (SELECT 1 FROM temporal_table tt WHERE tt.idPlaneta = de.idPlaneta AND tt.idObservatorio = de.idObservatorio AND tt.idMetodo = de.idMetodo AND tt.idAnioDesc = de.idAnioDesc AND tt.idAnioPaper = de.idAnioPaper);
+  END LOOP loop_label;
 
-SELECT "Data Updated" as 'Progress';
+  UPDATE DescubrimientoExoplaneta
+  JOIN temporal_table
+  ON DescubrimientoExoplaneta.idPlaneta = temporal_table.idPlaneta
+  AND DescubrimientoExoplaneta.idObservatorio = temporal_table.idObservatorio
+  AND DescubrimientoExoplaneta.idMetodo = temporal_table.idMetodo
+  AND DescubrimientoExoplaneta.idAnioDesc = temporal_table.idAnioDesc
+  AND DescubrimientoExoplaneta.idAnioPaper = temporal_table.idAnioPaper
+  SET DescubrimientoExoplaneta.PrecisionPercent = temporal_table.PrecisionPercent;
 
 
-END//
-delimiter ;
+  SELECT "Data Updated" AS 'Progress';
 
+  COMMIT;
 
+END //
+
+DELIMITER ;
 
 
 
