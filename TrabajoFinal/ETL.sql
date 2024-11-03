@@ -364,94 +364,7 @@ UPDATE DescubrimientoExoplaneta
 
 
     COMMIT;
-    open row_cursor;
 
-read_loop: LOOP
-  FETCH row_cursor INTO cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper;
-  IF credits THEN
-    LEAVE read_loop;
-  END IF;
-  SET valorFinal = 0;
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_orbper', temp);
-  SET valorFinal = valorFinal + temp;
-  
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_orbsmax', temp);
-  SET valorFinal = valorFinal + temp;
-  
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_rade', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_masse', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_msinie', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_cmasse', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_bmasse', temp);
-  SET valorFinal = valorFinal + temp;
-
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_dens', temp);
-  SET valorFinal = valorFinal + temp;
-
- 
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_insol', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_eqt', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_orbincl', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_tranmid', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_imppar', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_trandep', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_trandur', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_ratdor', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_ratror', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_occdep', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_orbtper', temp);
-  SET valorFinal = valorFinal + temp;
-
-
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_rvamp', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_projobliq', temp);
-  SET valorFinal = valorFinal + temp;
-
-  CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_trueobliq', temp);
-  SET valorFinal = valorFinal + temp;
-
-UPDATE DescubrimientoExoplaneta
-  SET PrecisionPercent = (valorFinal/23)
-  WHERE idPlaneta = cidPlaneta AND idObservatorio = cidObservatorio AND idMetodo = cidMetodo AND idAnioDesc = cidAnioDesc AND idAnioPaper = cidAnioPaper;
-
-  SET counter = counter + 1;
-  SELECT CONCAT(counter, '/5759') as 'Progress';
-END LOOP;
-
-CLOSE row_cursor;
 
 END//
 
@@ -479,13 +392,19 @@ CREATE TABLE temporal_table (
   idPlaneta int not null,
   idAnioDesc int not null,
   idAnioPaper int not null,
-  PrecisionPercent float default 0,
+  PrecisionPercent float default 0
 );
 
+Select "Table Created" as 'Progress';
+
 INSERT INTO temporal_table(idObservatorio, idMetodo, idPlaneta, idAnioDesc, idAnioPaper)
-VALUES (SELECT idObservatorio, idMetodo, idPlaneta, idAnioDesc, idAnioPaper FROM DescubrimientoExoplaneta);
+SELECT idObservatorio, idMetodo, idPlaneta, idAnioDesc, idAnioPaper FROM DescubrimientoExoplaneta;
+
+Select "Data Inserted" as 'Progress';
 
 SELECT count(*) into MaxSize FROM temporal_table; 
+
+Select "MaxSize Calculated" as 'Progress', MaxSize as 'MaxSize';
 
 set counter = 0;
 set i = 0;
