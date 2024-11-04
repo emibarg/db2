@@ -185,7 +185,7 @@ CREATE PROCEDURE calcError(
   IN columnName VARCHAR(50),
   OUT errorPorciento FLOAT
 )
-BEGIN
+proc_label:BEGIN
   DECLARE columnNameERR1 VARCHAR(50);
   DECLARE columnNameERR2 VARCHAR(50);
   DECLARE numMediciones INT DEFAULT 0;
@@ -282,14 +282,20 @@ SET @sql = CONCAT('
   -- Handle cases based on calculations
   IF numMediciones = numMedicionesNulas THEN
     SET errorPorciento = 100;
-  ELSEIF (avgValue < 1 AND suma >= 1) THEN
-    SET errorPorciento = 100;
-  ELSE
-    SET errorPorciento = 100 * suma / avgValue;
-    IF numMedicionesNulas > 0 THEN
-      SET errorPorciento = (errorPorciento + numMedicionesNulas * 100) / numMediciones;
-    END IF;
+    LEAVE proc_label;
   END IF;
+  
+  IF (avgValue < 1) THEN
+    SET errorPorciento = 100;
+    LEAVE proc_label;
+  END IF;
+
+  SET errorPorciento = 100 * suma / avgValue;
+
+  IF numMedicionesNulas > 0 THEN
+     SET errorPorciento = (errorPorciento + numMedicionesNulas * 100) / numMediciones;
+  END IF;
+
 
 END //
 
