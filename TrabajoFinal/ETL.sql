@@ -57,7 +57,7 @@ CREATE TABLE DescubrimientoExoplaneta (
   idAnioDesc int not null,
   idAnioPaper int not null,
   PrecisionPercent float default 0,
-  Distancia double not null,
+  Distancia double default 0,
   InfoSobreEstrella BOOLEAN default false,
 
   PRIMARY KEY(idObservatorio,idMetodo,idPlaneta,idAnioDesc, idAnioPaper),
@@ -719,7 +719,7 @@ BEGIN
 
     -- Insert into the final DescubrimientoExoplaneta table
    INSERT INTO DescubrimientoExoplaneta(idPlaneta, idObservatorio, idMetodo, idAnioDesc, idAnioPaper, Distancia)
-SELECT DISTINCT p.idPlaneta, o.idObservatorio, m.idMetodo, ad.idAnio, ap.idAnio, AVG(tn.sy_dist)
+SELECT DISTINCT p.idPlaneta, o.idObservatorio, m.idMetodo, ad.idAnio, ap.idAnio, (CASE WHEN AVG(tn.sy_dist) = -1 THEN 0 ELSE AVG(tn.sy_dist) END)
 FROM NASA.table_name tn
 JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
 JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
@@ -863,7 +863,7 @@ BEGIN
   CALL calcError(cidPlaneta, cidObservatorio, cidMetodo, cidAnioDesc, cidAnioPaper, 'pl_trueobliq', temp);
   SET valorFinal = valorFinal + temp;
 
-  SET valorFinal = valorFinal / 23;
+  SET valorFinal = valorFinal / 22;
   SET valorFinal = 100 - valorFinal;
 
     -- Update the temporal_table with the calculated valorFinal
