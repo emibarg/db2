@@ -148,7 +148,7 @@ BEGIN
 END;
 START TRANSACTION;
 INSERT INTO AnioPaper (AnioMes)
-SELECT DISTINCT disc_pubdate from NASA.table_name where disc_pubdate NOT IN (SELECT DISTINCT AnioMes from DW.AnioPaper);
+SELECT DISTINCT releasedate from NASA.table_name where releasedate NOT IN (SELECT DISTINCT AnioMes from DW.AnioPaper);
 COMMIT;
 END//
 delimiter ;
@@ -164,7 +164,7 @@ SET @sql = CONCAT('Select Count(tn.',columnName,') into @success
 JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
 JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
 JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
-JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
+JOIN DW.AnioPaper ap ON ap.AnioMes = tn.releasedate
 WHERE p.idPlaneta =', pidPlaneta,' and o.idObservatorio =', pidObservatorio,' and  m.idMetodo =', pidMetodo,' and ad.idAnio =', pidAnioDesc, ' and ap.idAnio =', pidAnioPaper, ' and tn.', columnName,'=-1' );
 PREPARE stmt from @sql;
 execute stmt;
@@ -616,7 +616,7 @@ DROP TEMPORARY TABLE IF EXISTS tempResults;
     JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
     JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
     JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
-    JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
+    JOIN DW.AnioPaper ap ON ap.AnioMes = tn.releasedate
     WHERE p.idPlaneta = ', pidPlaneta, '
       AND o.idObservatorio = ', pidObservatorio, '
       AND m.idMetodo = ', pidMetodo, '
@@ -719,13 +719,13 @@ BEGIN
 
     -- Insert into the final DescubrimientoExoplaneta table
    INSERT INTO DescubrimientoExoplaneta(idPlaneta, idObservatorio, idMetodo, idAnioDesc, idAnioPaper, Distancia)
-SELECT DISTINCT p.idPlaneta, o.idObservatorio, m.idMetodo, ad.idAnio, ap.idAnio, (CASE WHEN AVG(tn.sy_dist) = -1 THEN 0 ELSE AVG(tn.sy_dist) END)
+SELECT p.idPlaneta, o.idObservatorio, m.idMetodo, ad.idAnio, ap.idAnio, (CASE WHEN AVG(tn.sy_dist) = -1 THEN 0 ELSE AVG(tn.sy_dist) END)
 FROM NASA.table_name tn
 JOIN DW.Planeta p ON p.nombrePlaneta = tn.pl_name 
 JOIN DW.Observatorio o ON o.nombreObservatorio = tn.disc_facility 
 JOIN DW.Metodo m ON m.nombreMetodo = tn.discoverymethod
 JOIN DW.AnioDesc ad ON ad.Anio = tn.disc_year 
-JOIN DW.AnioPaper ap ON ap.AnioMes = tn.disc_pubdate
+JOIN DW.AnioPaper ap ON ap.AnioMes = tn.releasedate
 GROUP BY p.idPlaneta, o.idObservatorio, m.idMetodo, ad.idAnio, ap.idAnio;
 
 UPDATE DescubrimientoExoplaneta
